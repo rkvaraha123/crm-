@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrganizationStatus {
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+enum UserStatus {
+  ACTIVE
+  INVITED
+  SUSPENDED
+  DISABLED
+}
+
+enum MembershipStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+  REMOVED
+}
+
+enum TeamStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+model Organization {
+  id        String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String               @db.VarChar(160)
+  slug      String               @unique @db.VarChar(80)
+  status    OrganizationStatus   @default(ACTIVE)
+  createdAt DateTime             @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime             @updatedAt @db.Timestamptz(3)
+  members   OrganizationMember[]
+  teams     Team[]
+  roles     Role[]
+  userRoles UserRole[]
+
+  @@index([status])
+}
+
+model User {
+  id                 String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email              String               @unique @db.VarChar(254)
+  firstName          String               @db.VarChar(80)
+  lastName           String               @db.VarChar(80)
+  status             UserStatus           @default(INVITED)
+  identityProviderId String?              @unique @db.VarChar(255)
+  createdAt          DateTime             @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime             @updatedAt @db.Timestamptz(3)
+  memberships        OrganizationMember[]
+
+  @@index([status])
+}
+
+model OrganizationMember {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String           @db.Uuid
+  userId         String           @db.Uuid
+  status         MembershipStatus @default(INVITED)
+  joinedAt       DateTime?        @db.Timestamptz(3)
+  createdAt      DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime         @updatedAt @db.Timestamptz(3)
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  user           User             @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  userRoles      UserRole[]
+
+  @@unique([organizationId, userId])
+  @@index([userId, status])
+  @@index([organizationId, status])
+}
+
+model Team {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String       @db.Uuid
+  name           String       @db.VarChar(100)
+  description    String?      @db.VarChar(1000)
+  status         TeamStatus   @default(ACTIVE)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([organizationId, name])
+  @@index([organizationId, status])
+}
+
+model Role {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String?          @db.Uuid
+  name           String           @db.VarChar(80)
+  description    String?          @db.VarChar(1000)
+  isSystem       Boolean          @default(false)
+  createdAt      DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime         @updatedAt @db.Timestamptz(3)
+  organization   Organization?    @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  permissions    RolePermission[]
+  userRoles      UserRole[]
+
+  @@unique([organizationId, name])
+}
+
+model Permission {
+  id          String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key         String           @unique @db.VarChar(100)
+  description String           @db.VarChar(255)
+  createdAt   DateTime         @default(now()) @db.Timestamptz(3)
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roleId       String     @db.Uuid
+  permissionId String     @db.Uuid
+  createdAt    DateTime   @default(now()) @db.Timestamptz(3)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([roleId, permissionId])
+  @@index([permissionId])
+}
+
+model UserRole {
+  id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String             @db.Uuid
+  userId         String             @db.Uuid
+  roleId         String             @db.Uuid
+  createdAt      DateTime           @default(now()) @db.Timestamptz(3)
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  membership     OrganizationMember @relation(fields: [organizationId, userId], references: [organizationId, userId], onDelete: Restrict, onUpdate: Restrict)
+  role           Role               @relation(fields: [roleId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([organizationId, userId, roleId])
+  @@index([roleId])
+  @@index([userId])
+}
