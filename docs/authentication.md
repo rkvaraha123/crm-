@@ -4,25 +4,25 @@ Task 3 uses self-hosted Keycloak for identity only. CRM users, organizations, me
 
 ## Local architecture
 
-| Service | Role | Local address |
-| --- | --- | --- |
-| web | React public OIDC client | http://localhost:5173 |
-| api | NestJS resource server | http://localhost:3000 |
-| postgres | CRM database | localhost:5433 |
-| keycloak | Official `quay.io/keycloak/keycloak:26.7.4` | http://localhost:8080 |
-| keycloak-db | Dedicated identity database and volume | Docker network only; no host port |
+| Service     | Role                                        | Local address                     |
+| ----------- | ------------------------------------------- | --------------------------------- |
+| web         | React public OIDC client                    | http://localhost:5173             |
+| api         | NestJS resource server                      | http://localhost:3000             |
+| postgres    | CRM database                                | localhost:5433                    |
+| keycloak    | Official `quay.io/keycloak/keycloak:26.7.4` | http://localhost:8080             |
+| keycloak-db | Dedicated identity database and volume      | Docker network only; no host port |
 
 Keycloak uses `/health/ready` on its private management port 9000. The health check requires HTTP 200, not merely an open TCP socket. Keycloak waits for its database; API waits for both Keycloak readiness and CRM PostgreSQL. The CRM database lifecycle remains independent.
 
 Realm: **rk-varaha-crm**. The committed development realm import contains configuration and a service account, but no human credentials. Keycloak resolves the admin-client secret from its environment during first import. Existing realms are not overwritten on restart; changing the file does not silently reconfigure an existing realm.
 
-| Client | Configuration |
-| --- | --- |
-| rk-varaha-web | Public SPA; Authorization Code + required PKCE S256; localhost:5173 redirect URIs/origin; no secret, implicit flow, or password grant |
-| rk-varaha-api | Resource-server audience; no interactive or password grant |
-| rk-varaha-admin | Confidential server-only service account; client credentials; realm-management view-users, query-users and manage-users only |
+| Client          | Configuration                                                                                                                                                                     |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| rk-varaha-web   | Public SPA; Authorization Code + required PKCE S256; built-in `basic`, profile and email scopes; localhost:5173 redirect URIs/origin; no secret, implicit flow, or password grant |
+| rk-varaha-api   | Resource-server audience; no interactive or password grant                                                                                                                        |
+| rk-varaha-admin | Confidential server-only service account; client credentials; realm-management view-users, query-users and manage-users only                                                      |
 
-The SPA audience mapper includes `rk-varaha-api` in access tokens, not ID tokens. Keycloak's built-in realm-management permissions are infrastructure administration capabilities, not CRM roles.
+The SPA audience mapper includes `rk-varaha-api` in access tokens, not ID tokens. The built-in `basic` scope supplies the required stable `sub` claim; do not replace the default client-scope list without retaining it. Keycloak's built-in realm-management permissions are infrastructure administration capabilities, not CRM roles.
 
 ## Start locally
 
@@ -90,20 +90,20 @@ KeycloakAdminService obtains short-lived service tokens using server environment
 
 ## Configuration
 
-| Variable | Purpose |
-| --- | --- |
-| KEYCLOAK_PUBLIC_URL | Browser-facing base URL |
-| KEYCLOAK_INTERNAL_URL | Server-side administration base URL; Compose overrides to keycloak:8080 |
-| KEYCLOAK_REALM | rk-varaha-crm for the committed development import |
-| KEYCLOAK_ISSUER | Exact public realm issuer |
-| KEYCLOAK_JWKS_URL | Server-reachable signing-key endpoint; Compose uses internal DNS |
-| KEYCLOAK_API_AUDIENCE | rk-varaha-api |
-| KEYCLOAK_ADMIN_CLIENT_ID / KEYCLOAK_ADMIN_CLIENT_SECRET | Confidential server service identity |
-| KEYCLOAK_DB_USER / KEYCLOAK_DB_PASSWORD / KEYCLOAK_DB_NAME | Separate identity database configuration |
-| KC_BOOTSTRAP_ADMIN_USERNAME / KC_BOOTSTRAP_ADMIN_PASSWORD | Initial Keycloak console administrator |
-| VITE_KEYCLOAK_URL / VITE_KEYCLOAK_REALM / VITE_KEYCLOAK_CLIENT_ID | Public browser settings only |
-| BOOTSTRAP_ADMIN_EMAIL / BOOTSTRAP_ADMIN_IDENTITY_ID | Explicit verified human identity for CLI bootstrap |
-| BOOTSTRAP_ORGANIZATION_SLUG / BOOTSTRAP_ADMIN_ROLE | Target tenant and initial role |
+| Variable                                                          | Purpose                                                                 |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| KEYCLOAK_PUBLIC_URL                                               | Browser-facing base URL                                                 |
+| KEYCLOAK_INTERNAL_URL                                             | Server-side administration base URL; Compose overrides to keycloak:8080 |
+| KEYCLOAK_REALM                                                    | rk-varaha-crm for the committed development import                      |
+| KEYCLOAK_ISSUER                                                   | Exact public realm issuer                                               |
+| KEYCLOAK_JWKS_URL                                                 | Server-reachable signing-key endpoint; Compose uses internal DNS        |
+| KEYCLOAK_API_AUDIENCE                                             | rk-varaha-api                                                           |
+| KEYCLOAK_ADMIN_CLIENT_ID / KEYCLOAK_ADMIN_CLIENT_SECRET           | Confidential server service identity                                    |
+| KEYCLOAK_DB_USER / KEYCLOAK_DB_PASSWORD / KEYCLOAK_DB_NAME        | Separate identity database configuration                                |
+| KC_BOOTSTRAP_ADMIN_USERNAME / KC_BOOTSTRAP_ADMIN_PASSWORD         | Initial Keycloak console administrator                                  |
+| VITE_KEYCLOAK_URL / VITE_KEYCLOAK_REALM / VITE_KEYCLOAK_CLIENT_ID | Public browser settings only                                            |
+| BOOTSTRAP_ADMIN_EMAIL / BOOTSTRAP_ADMIN_IDENTITY_ID               | Explicit verified human identity for CLI bootstrap                      |
+| BOOTSTRAP_ORGANIZATION_SLUG / BOOTSTRAP_ADMIN_ROLE                | Target tenant and initial role                                          |
 
 API startup validates required identity URLs, realm, audience, and non-placeholder server secret. Issuer must match the configured public realm. Production mode requires HTTPS for identity URLs. Runtime code has no localhost fallback for identity verification.
 

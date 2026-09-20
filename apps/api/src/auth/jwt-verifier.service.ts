@@ -1,12 +1,11 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createRemoteJWKSet, jwtVerify, errors } from 'jose';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { isEmail } from 'class-validator';
 import type { AuthenticatedPrincipal } from './authenticated-principal';
 @Injectable()
 export class JwtVerifierService {
   private readonly keys;
-  private readonly logger = new Logger(JwtVerifierService.name);
   constructor(private readonly config: ConfigService) {
     this.keys = createRemoteJWKSet(
       new URL(config.getOrThrow<string>('KEYCLOAK_JWKS_URL')),
@@ -49,8 +48,7 @@ export class JwtVerifierService {
             : undefined,
         emailVerified: payload.email_verified === true,
       };
-    } catch (error) {
-      this.logger.debug(`JWT rejected: ${error instanceof errors.JOSEError ? error.code : error instanceof Error ? error.name : 'verification_error'}`);
+    } catch {
       throw new UnauthorizedException('Invalid authentication');
     }
   }

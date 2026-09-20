@@ -24,7 +24,13 @@
         "pkce.code.challenge.method": "S256",
         "post.logout.redirect.uris": "http://localhost:5173/*"
       },
-      "defaultClientScopes": ["web-origins", "acr", "profile", "email"],
+      "defaultClientScopes": [
+        "basic",
+        "web-origins",
+        "acr",
+        "profile",
+        "email"
+      ],
       "protocolMappers": [
         {
           "name": "crm-api-audience",

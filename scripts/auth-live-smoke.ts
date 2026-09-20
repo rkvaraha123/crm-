@@ -127,12 +127,27 @@ async function main() {
       url.searchParams.get('response_type') === 'code'
     )
       pkceObserved = true;
-    if (url.origin === 'http://localhost:3000' && url.pathname === '/api/v1/me') {
+    if (
+      url.origin === 'http://localhost:3000' &&
+      url.pathname === '/api/v1/me'
+    ) {
       authHeader = request.headers().authorization;
-      if (authHeader) { const claims = JSON.parse(Buffer.from(authHeader.split('.')[1], 'base64url').toString()); tokenMetadata = { issuer: claims.iss, audience: claims.aud, type: claims.typ }; }
+      if (authHeader) {
+        const claims = JSON.parse(
+          Buffer.from(authHeader.split('.')[1], 'base64url').toString(),
+        ) as Record<string, unknown>;
+        tokenMetadata = {
+          issuer: claims.iss,
+          audience: claims.aud,
+          type: claims.typ,
+        };
+      }
     }
   });
-  page.on('response', (response) => { if (response.url().startsWith('http://localhost:3000/api/v1/me')) apiStatuses.push(response.status()); });
+  page.on('response', (response) => {
+    if (response.url().startsWith('http://localhost:3000/api/v1/me'))
+      apiStatuses.push(response.status());
+  });
   stage = 'frontend sign-in initialization';
   await page.goto('http://localhost:5173');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
@@ -216,10 +231,26 @@ async function cleanup() {
 }
 void main()
   .catch(async () => {
-    console.info('API response statuses:', apiStatuses, 'Token routing metadata:', tokenMetadata);
+    console.info(
+      'API response statuses:',
+      apiStatuses,
+      'Token routing metadata:',
+      tokenMetadata,
+    );
     if (inspectionPage) {
-      console.info('Browser location (no query or fragment):', new URL(inspectionPage.url()).pathname);
-      console.info('Visible status:', (await inspectionPage.locator('body').innerText().catch(() => '')).slice(0, 400));
+      console.info(
+        'Browser location (no query or fragment):',
+        new URL(inspectionPage.url()).pathname,
+      );
+      console.info(
+        'Visible status:',
+        (
+          await inspectionPage
+            .locator('body')
+            .innerText()
+            .catch(() => '')
+        ).slice(0, 400),
+      );
     }
     console.error(
       `Live authentication verification failed at: ${stage}. Sensitive details omitted.`,
