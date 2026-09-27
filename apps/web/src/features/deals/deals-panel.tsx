@@ -278,7 +278,9 @@ export function DealsPanel({
               maxLength={3}
               minLength={3}
               value={currency}
-              onChange={(event) => setCurrency(event.target.value.toUpperCase())}
+              onChange={(event) =>
+                setCurrency(event.target.value.toUpperCase())
+              }
             />
           </label>
           <label className="crm-field">
