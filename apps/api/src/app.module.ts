@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ActivitiesModule } from './activities/activities.module';
+import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthorizationModule } from './authorization/authorization.module';
 import { CommonModule } from './common/common.module';
@@ -25,6 +26,7 @@ import { UsersModule } from './users/users.module';
     }),
     DatabaseModule,
     TenantModule,
+    AdminModule,
     TeamsModule,
     RolesModule,
     PermissionsModule,

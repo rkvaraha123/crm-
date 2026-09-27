@@ -6,6 +6,7 @@ import { createApiClient, CurrentUser, selectOrganization } from './api-client';
 import { useAuth } from './auth/auth-context';
 import { AuthorizationProvider } from './authorization/authorization-context';
 import { WorkspaceShell } from './workspace/workspace-shell';
+import { AdminPortal } from './admin/admin-portal';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
@@ -249,6 +250,7 @@ export function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/admin/*" element={<AdminPortal />} />
       <Route
         path="/app/*"
         element={
