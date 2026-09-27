@@ -136,6 +136,24 @@ describe('CRM product platform sales flow', () => {
       .expect((tenantResponse) => {
         expect(tenantResponse.body.dealsLabel).toBe('Opportunities');
       });
+
+    await request(app.getHttpServer())
+      .put(`/api/v1/admin/organizations/${organizationId}/product-config`)
+      .set(auth('product-system'))
+      .send({ leadsEnabled: false })
+      .expect(200);
+
+    await request(app.getHttpServer())
+      .get(`/api/v1/organizations/${organizationId}/leads`)
+      .set(auth('product-sales'))
+      .set('X-Organization-Id', organizationId)
+      .expect(403);
+
+    await request(app.getHttpServer())
+      .put(`/api/v1/admin/organizations/${organizationId}/product-config`)
+      .set(auth('product-system'))
+      .send({ leadsEnabled: true })
+      .expect(200);
   });
 
   it('supports lead to deal to follow-up workflow', async () => {
