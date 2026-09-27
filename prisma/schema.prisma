@@ -47,6 +47,32 @@ enum ContactLifecycleStatus {
   OTHER
 }
 
+enum RecordResource {
+  COMPANIES
+  CONTACTS
+}
+
+enum RecordScope {
+  OWN
+  TEAM
+  ORGANIZATION
+}
+
+enum ActivitySubjectType {
+  COMPANY
+  CONTACT
+}
+
+enum ActivityType {
+  NOTE
+  COMPANY_CREATED
+  COMPANY_UPDATED
+  COMPANY_ARCHIVED
+  CONTACT_CREATED
+  CONTACT_UPDATED
+  CONTACT_ARCHIVED
+}
+
 model Organization {
   id          String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String               @db.VarChar(160)
@@ -61,6 +87,7 @@ model Organization {
   teamMembers TeamMember[]
   companies   Company[]
   contacts    Contact[]
+  activities  Activity[]
 
   @@index([status])
 }
@@ -78,6 +105,7 @@ model User {
   teamMemberships    TeamMember[]
   ownedCompanies     Company[]
   ownedContacts      Contact[]
+  activities         Activity[] @relation("ActivityActor")
 
   @@index([status])
 }
@@ -140,6 +168,7 @@ model Role {
   organization   Organization?    @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   permissions    RolePermission[]
   userRoles      UserRole[]
+  recordScopes   RoleRecordScope[]
 
   @@unique([organizationId, name])
 }
@@ -162,6 +191,19 @@ model RolePermission {
 
   @@unique([roleId, permissionId])
   @@index([permissionId])
+}
+
+model RoleRecordScope {
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roleId    String         @db.Uuid
+  resource  RecordResource
+  scope     RecordScope
+  createdAt DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime       @updatedAt @db.Timestamptz(3)
+  role      Role           @relation(fields: [roleId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@unique([roleId, resource])
+  @@index([resource, scope])
 }
 
 model UserRole {
@@ -224,4 +266,23 @@ model Contact {
   @@index([organizationId, companyId])
   @@index([organizationId, lifecycleStatus])
   @@index([organizationId, email])
+}
+
+model Activity {
+  id             String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String              @db.Uuid
+  actorUserId    String              @db.Uuid
+  subjectType    ActivitySubjectType
+  subjectId      String              @db.Uuid
+  type           ActivityType
+  body           String?             @db.VarChar(10000)
+  metadata       Json?
+  archivedAt     DateTime?           @db.Timestamptz(3)
+  createdAt      DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime            @updatedAt @db.Timestamptz(3)
+  organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  actor          User                @relation("ActivityActor", fields: [actorUserId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([organizationId, subjectType, subjectId, archivedAt, createdAt])
+  @@index([organizationId, actorUserId, createdAt])
 }
