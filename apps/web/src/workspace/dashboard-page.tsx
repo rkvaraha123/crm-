@@ -137,11 +137,11 @@ export function DashboardPage({
         <div className="crm-metric-card crm-metric-card-static">
           <span>CRM access</span>
           <strong className="crm-scope-value">
-            {scopes.isPending ? '…' : scopeLabel(scopes.data?.companies ?? null)}
+            {scopes.isPending
+              ? '…'
+              : scopeLabel(scopes.data?.companies ?? null)}
           </strong>
-          <small>
-            Contacts: {scopeLabel(scopes.data?.contacts ?? null)}
-          </small>
+          <small>Contacts: {scopeLabel(scopes.data?.contacts ?? null)}</small>
         </div>
       </div>
 
