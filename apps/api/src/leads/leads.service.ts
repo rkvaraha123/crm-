@@ -37,7 +37,9 @@ export class LeadsService {
                 { firstName: { contains: query.search, mode: 'insensitive' } },
                 { lastName: { contains: query.search, mode: 'insensitive' } },
                 { email: { contains: query.search, mode: 'insensitive' } },
-                { companyName: { contains: query.search, mode: 'insensitive' } },
+                {
+                  companyName: { contains: query.search, mode: 'insensitive' },
+                },
               ],
             }
           : {}),
