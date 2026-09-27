@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ActivitySubjectType, ActivityType } from '@prisma/client';
 import { RecordScopeService } from '../authorization/record-scope.service';
 import { PrismaService } from '../common/database/prisma.service';
+import { ProductFeatureService } from '../common/product-feature.service';
 import { OrganizationContextService } from '../common/tenant/organization-context.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { ListLeadsDto } from './dto/list-leads.dto';
@@ -20,9 +21,11 @@ export class LeadsService {
     private readonly prisma: PrismaService,
     private readonly context: OrganizationContextService,
     private readonly scopes: RecordScopeService,
+    private readonly features: ProductFeatureService,
   ) {}
 
   async list(query: ListLeadsDto) {
+    await this.features.require('leadsEnabled');
     const organizationId = this.context.requireOrganization();
     const access = await this.scopes.leadWhere();
     return this.prisma.lead.findMany({
@@ -52,6 +55,7 @@ export class LeadsService {
   }
 
   async find(id: string) {
+    await this.features.require('leadsEnabled');
     const access = await this.scopes.leadWhere();
     return this.prisma.lead.findFirstOrThrow({
       where: {
@@ -65,6 +69,7 @@ export class LeadsService {
   }
 
   async create(data: CreateLeadDto) {
+    await this.features.require('leadsEnabled');
     const current = this.context.current();
     const organizationId = this.context.requireOrganization();
     return this.prisma.$transaction(async (tx) => {
