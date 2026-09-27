@@ -11,8 +11,6 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { CurrentUser } from '../auth/current-user.decorator';
-import type { VerifiedIdentity } from '../auth/identity.provider';
 import { Access } from '../common/tenant/tenant-access.decorator';
 import { TenantAccessGuard } from '../common/tenant/tenant-access.guard';
 import { OrganizationContextInterceptor } from '../common/tenant/organization-context.interceptor';
@@ -31,8 +29,8 @@ export class AdminController {
   constructor(private readonly service: AdminService) {}
 
   @Get('me')
-  me(@CurrentUser() identity: VerifiedIdentity) {
-    return this.service.me(identity.userId);
+  me() {
+    return this.service.me();
   }
 
   @Get('overview')
