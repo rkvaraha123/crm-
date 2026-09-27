@@ -3,7 +3,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ApiClient } from '../../api-client';
 import { useAuthorization } from '../../authorization/authorization-context';
 import { ActivityPanel } from '../activities/activity-panel';
-import { CustomFieldInputs, useCustomFields } from '../../custom-fields/custom-field-inputs';
+import {
+  CustomFieldInputs,
+  useCustomFields,
+} from '../../custom-fields/custom-field-inputs';
 
 interface CompanyOption {
   id: string;
