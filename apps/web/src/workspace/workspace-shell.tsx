@@ -84,11 +84,7 @@ export function WorkspaceShell({
         sidebarColor: string;
         pageBackground: string;
         surfaceColor: string;
-      }>(
-        `/organizations/${organizationId}/appearance`,
-        organizationId,
-        signal,
-      ),
+      }>(`/organizations/${organizationId}/appearance`, organizationId, signal),
   });
 
   const theme = appearance.data ?? {
