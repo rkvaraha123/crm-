@@ -1509,3 +1509,568 @@ a.crm-metric-card:hover {
     grid-template-columns: 1fr;
   }
 }
+
+
+.crm-module-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.crm-heading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.crm-heading-actions select,
+.crm-search-input {
+  min-width: 12rem;
+  border: 1px solid color-mix(in srgb, var(--crm-page-text) 18%, transparent);
+  border-radius: 0.7rem;
+  background: var(--crm-surface);
+  color: var(--crm-surface-text);
+  padding: 0.65rem 0.75rem;
+}
+
+.crm-record-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--crm-surface-text) 10%, transparent);
+  border-radius: 1rem;
+  background: var(--crm-surface);
+  padding: 1rem;
+  box-shadow: 0 8px 24px rgb(15 23 42 / 4%);
+}
+
+.crm-field select,
+.crm-field textarea {
+  display: block;
+  width: 100%;
+  margin-top: 0.4rem;
+  border: 1px solid color-mix(in srgb, var(--crm-surface-text) 16%, transparent);
+  border-radius: 0.65rem;
+  background: var(--crm-surface);
+  color: var(--crm-surface-text);
+  padding: 0.7rem 0.8rem;
+}
+
+.crm-field-wide {
+  grid-column: 1 / -1;
+}
+
+.crm-custom-check {
+  display: flex;
+  min-height: 2.9rem;
+  align-items: center;
+  gap: 0.55rem;
+  align-self: end;
+  border: 1px solid color-mix(in srgb, var(--crm-surface-text) 12%, transparent);
+  border-radius: 0.65rem;
+  padding: 0.65rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.crm-custom-check input {
+  width: 1rem;
+  height: 1rem;
+}
+
+.crm-inline-error {
+  align-self: center;
+  color: #b91c1c;
+  font-size: 0.8rem;
+}
+
+.crm-table-wrap {
+  overflow-x: auto;
+  border: 1px solid color-mix(in srgb, var(--crm-surface-text) 10%, transparent);
+  border-radius: 1rem;
+  background: var(--crm-surface);
+  box-shadow: 0 8px 24px rgb(15 23 42 / 4%);
+}
+
+.crm-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--crm-surface-text);
+}
+
+.crm-data-table th,
+.crm-data-table td {
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--crm-surface-text) 8%, transparent);
+  padding: 0.8rem 0.9rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.crm-data-table th {
+  background: color-mix(in srgb, var(--crm-page) 70%, var(--crm-surface));
+  color: color-mix(in srgb, var(--crm-surface-text) 65%, transparent);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.crm-data-table td {
+  font-size: 0.82rem;
+}
+
+.crm-data-table td strong,
+.crm-data-table td small {
+  display: block;
+}
+
+.crm-data-table td small {
+  margin-top: 0.2rem;
+  color: color-mix(in srgb, var(--crm-surface-text) 55%, transparent);
+}
+
+.crm-data-table select {
+  max-width: 12rem;
+  border: 1px solid color-mix(in srgb, var(--crm-surface-text) 15%, transparent);
+  border-radius: 0.55rem;
+  background: var(--crm-surface);
+  color: var(--crm-surface-text);
+  padding: 0.45rem 0.55rem;
+}
+
+.crm-pipeline-board {
+  display: grid;
+  grid-auto-columns: minmax(16rem, 1fr);
+  grid-auto-flow: column;
+  gap: 0.85rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.crm-pipeline-column {
+  min-height: 20rem;
+  border: 1px solid color-mix(in srgb, var(--crm-page-text) 10%, transparent);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--crm-page) 85%, var(--crm-surface));
+  padding: 0.75rem;
+}
+
+.crm-pipeline-column > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.crm-pipeline-column header strong,
+.crm-pipeline-column header small {
+  display: block;
+}
+
+.crm-pipeline-column header small {
+  margin-top: 0.15rem;
+  color: color-mix(in srgb, var(--crm-page-text) 55%, transparent);
+  font-size: 0.68rem;
+}
+
+.crm-pipeline-column header > span {
+  color: var(--crm-primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.crm-pipeline-cards {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.crm-deal-card {
+  display: grid;
+  gap: 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--crm-surface-text) 10%, transparent);
+  border-radius: 0.75rem;
+  background: var(--crm-surface);
+  padding: 0.8rem;
+  box-shadow: 0 6px 18px rgb(15 23 42 / 5%);
+}
+
+.crm-deal-card > span {
+  color: var(--crm-primary);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.crm-deal-card small {
+  color: color-mix(in srgb, var(--crm-surface-text) 55%, transparent);
+}
+
+.crm-deal-card select {
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--crm-surface-text) 14%, transparent);
+  border-radius: 0.55rem;
+  background: var(--crm-surface);
+  color: var(--crm-surface-text);
+  padding: 0.45rem;
+}
+
+.crm-pipeline-empty {
+  border: 1px dashed color-mix(in srgb, var(--crm-page-text) 18%, transparent);
+  border-radius: 0.7rem;
+  padding: 1rem;
+  color: color-mix(in srgb, var(--crm-page-text) 50%, transparent);
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+.crm-report-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.crm-report-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--crm-surface-text) 8%, transparent);
+  padding: 0.75rem 0;
+}
+
+.crm-report-list span,
+.crm-report-list small {
+  display: block;
+}
+
+.crm-report-list small {
+  margin-top: 0.15rem;
+  color: color-mix(in srgb, var(--crm-surface-text) 55%, transparent);
+  font-size: 0.68rem;
+}
+
+.crm-nav-loading {
+  padding: 0.6rem 0.75rem;
+  color: color-mix(in srgb, var(--crm-sidebar-text) 55%, transparent);
+  font-size: 0.72rem;
+}
+
+.admin-builder-picker {
+  max-width: 34rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.9rem;
+  background: #fff;
+  padding: 1rem;
+}
+
+.admin-builder-picker label,
+.admin-builder-form label,
+.admin-module-row label {
+  color: #475569;
+  font-size: 0.74rem;
+  font-weight: 750;
+}
+
+.admin-builder-picker select,
+.admin-builder-form input,
+.admin-builder-form select,
+.admin-module-row input,
+.admin-module-row select {
+  display: block;
+  width: 100%;
+  margin-top: 0.3rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.6rem;
+  background: #fff;
+  padding: 0.6rem 0.7rem;
+}
+
+.admin-section-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.admin-section-title h2 {
+  margin: 0.2rem 0 0;
+}
+
+.admin-section-title p:last-child {
+  margin-top: 0.35rem;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.admin-section-title > select {
+  min-width: 10rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.6rem;
+  background: #fff;
+  padding: 0.6rem 0.7rem;
+}
+
+.admin-builder-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.admin-module-row {
+  display: grid;
+  grid-template-columns: 10rem minmax(10rem, 0.7fr) 6rem minmax(12rem, 1fr) 7rem auto;
+  gap: 0.65rem;
+  align-items: end;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.8rem;
+  padding: 0.75rem;
+}
+
+.admin-module-key {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  align-self: center;
+}
+
+.admin-module-key > span {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+}
+
+.admin-module-key > span.is-enabled {
+  background: #10b981;
+}
+
+.admin-module-key > span.is-disabled {
+  background: #94a3b8;
+}
+
+.admin-module-key strong,
+.admin-module-key small {
+  display: block;
+}
+
+.admin-module-key small {
+  margin-top: 0.15rem;
+  color: #64748b;
+  font-size: 0.65rem;
+}
+
+.admin-module-description {
+  min-width: 0;
+}
+
+.admin-toggle {
+  display: inline-flex !important;
+  min-height: 2.45rem;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+}
+
+.admin-toggle input {
+  width: 1rem !important;
+  margin: 0 !important;
+}
+
+.admin-toggle-compact {
+  min-height: auto;
+  font-size: 0.72rem;
+}
+
+.admin-builder-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin-bottom: 1rem;
+  border-radius: 0.8rem;
+  background: #f8fafc;
+  padding: 0.85rem;
+}
+
+.admin-builder-wide {
+  grid-column: span 2;
+}
+
+.admin-builder-table {
+  margin-top: 1rem;
+}
+
+.admin-builder-table input[type='text'],
+.admin-builder-table input:not([type]) {
+  width: min(100%, 16rem);
+}
+
+.admin-small-number {
+  width: 5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  padding: 0.45rem;
+}
+
+.admin-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.admin-inline-form {
+  display: flex;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.admin-inline-form input {
+  min-width: 16rem;
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.6rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.admin-pipeline-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-pipeline-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.9rem;
+  background: #f8fafc;
+  padding: 0.85rem;
+}
+
+.admin-pipeline-card > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.admin-pipeline-card > header input {
+  min-width: 16rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.55rem;
+  padding: 0.55rem 0.65rem;
+  font-weight: 750;
+}
+
+.admin-pipeline-badges {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+}
+
+.admin-pipeline-badges span {
+  border-radius: 999px;
+  background: #e2e8f0;
+  padding: 0.2rem 0.45rem;
+  color: #475569;
+  font-size: 0.6rem;
+  font-weight: 800;
+}
+
+.admin-stage-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.admin-stage-row,
+.admin-new-stage {
+  display: grid;
+  grid-template-columns: minmax(10rem, 1fr) 6rem 7rem 6rem auto;
+  gap: 0.55rem;
+  align-items: center;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 0.55rem;
+}
+
+.admin-stage-row input,
+.admin-new-stage input {
+  min-width: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.55rem;
+}
+
+.admin-new-stage {
+  margin-top: 0.75rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 0.7rem;
+  padding: 0.65rem;
+}
+
+@media (max-width: 1100px) {
+  .crm-record-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-module-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-module-key,
+  .admin-module-description {
+    grid-column: span 2;
+  }
+
+  .admin-builder-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-stage-row,
+  .admin-new-stage {
+    grid-template-columns: minmax(10rem, 1fr) 5rem 6rem;
+  }
+
+  .admin-stage-row .admin-toggle,
+  .admin-stage-row .admin-row-actions,
+  .admin-new-stage button {
+    grid-column: span 3;
+  }
+}
+
+@media (max-width: 700px) {
+  .crm-record-form {
+    grid-template-columns: 1fr;
+  }
+
+  .crm-field-wide {
+    grid-column: auto;
+  }
+
+  .crm-page-heading,
+  .crm-heading-actions,
+  .admin-section-title,
+  .admin-pipeline-card > header,
+  .admin-inline-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-builder-form,
+  .admin-module-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-module-key,
+  .admin-module-description,
+  .admin-builder-wide {
+    grid-column: auto;
+  }
+
+  .admin-stage-row,
+  .admin-new-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stage-row .admin-toggle,
+  .admin-stage-row .admin-row-actions,
+  .admin-new-stage button {
+    grid-column: auto;
+  }
+}
