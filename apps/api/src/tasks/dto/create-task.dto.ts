@@ -1,0 +1,53 @@
+import { TaskPriority } from '@prisma/client';
+import { Transform } from 'class-transformer';
+import {
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Length,
+  MaxLength,
+} from 'class-validator';
+
+export class CreateTaskDto {
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  @IsString()
+  @Length(1, 180)
+  title!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(5000)
+  description?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dueAt?: string;
+
+  @IsOptional()
+  @IsEnum(TaskPriority)
+  priority?: TaskPriority;
+
+  @IsOptional()
+  @IsUUID()
+  assigneeId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  companyId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  contactId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  leadId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  dealId?: string;
+}
