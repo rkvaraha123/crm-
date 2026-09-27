@@ -229,7 +229,8 @@ textarea:focus-visible {
   height: 100vh;
   flex-direction: column;
   overflow-y: auto;
-  border-right: 1px solid color-mix(in srgb, var(--crm-sidebar-text) 14%, transparent);
+  border-right: 1px solid
+    color-mix(in srgb, var(--crm-sidebar-text) 14%, transparent);
   background: var(--crm-sidebar);
   color: var(--crm-sidebar-text);
 }
@@ -899,7 +900,6 @@ a.crm-metric-card:hover {
     font-size: 2.1rem;
   }
 }
-
 
 .crm-appearance-layout {
   display: grid;
