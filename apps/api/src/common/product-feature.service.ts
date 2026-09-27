@@ -23,7 +23,6 @@ export class ProductFeatureService {
       where: { organizationId },
       create: { organizationId },
       update: {},
-      select: { [feature]: true },
     });
     if (!config[feature])
       throw new ForbiddenException('CRM module is disabled for this organization');
