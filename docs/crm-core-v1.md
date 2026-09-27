@@ -28,6 +28,7 @@ This milestone turns the existing identity/tenant/RBAC platform into the first u
 - database trigger prevents cross-tenant team membership
 
 ### Database integrity
+
 PostgreSQL triggers enforce:
 
 - team membership cannot cross organization boundaries
@@ -36,6 +37,7 @@ PostgreSQL triggers enforce:
 - contact/company relationships cannot cross organization boundaries
 
 ### Frontend
+
 The React workspace now exposes:
 
 - company creation, search, list and archive
@@ -44,6 +46,7 @@ The React workspace now exposes:
 - permission-aware actions through the existing authorization context
 
 ### Verification
+
 `apps/api/test/crm-core.integration.spec.ts` covers:
 
 - cross-tenant company isolation
