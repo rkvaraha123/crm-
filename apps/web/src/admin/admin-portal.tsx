@@ -188,6 +188,7 @@ export function AdminPortal() {
               element={<AdminOrganizations api={api} />}
             />
             <Route path="users" element={<AdminUsers api={api} />} />
+            <Route path="products" element={<AdminProducts api={api} />} />
             <Route path="appearance" element={<AdminAppearance api={api} />} />
             <Route path="system" element={<AdminSystem api={api} />} />
             <Route
