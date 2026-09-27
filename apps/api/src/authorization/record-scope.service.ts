@@ -65,7 +65,7 @@ export class RecordScopeService {
   async effectiveScopes() {
     const context = this.context.current();
     const organizationId = this.context.requireOrganization();
-    const [companies, contacts] = await Promise.all([
+    const [companies, contacts, leads, deals, tasks] = await Promise.all([
       this.getEffectiveRecordScope(
         context.userId,
         organizationId,
@@ -76,8 +76,23 @@ export class RecordScopeService {
         organizationId,
         RecordResource.CONTACTS,
       ),
+      this.getEffectiveRecordScope(
+        context.userId,
+        organizationId,
+        RecordResource.LEADS,
+      ),
+      this.getEffectiveRecordScope(
+        context.userId,
+        organizationId,
+        RecordResource.DEALS,
+      ),
+      this.getEffectiveRecordScope(
+        context.userId,
+        organizationId,
+        RecordResource.TASKS,
+      ),
     ]);
-    return { companies, contacts };
+    return { companies, contacts, leads, deals, tasks };
   }
 
   private async requireScope(resource: RecordResource) {
@@ -131,6 +146,50 @@ export class RecordScopeService {
     if (scope === RecordScope.ORGANIZATION) return {};
     if (scope === RecordScope.OWN) return { ownerId: userId };
     return this.teamOwnerFilter(userId, organizationId);
+  }
+
+  async leadWhere(): Promise<Prisma.LeadWhereInput> {
+    const { scope, userId, organizationId } = await this.requireScope(
+      RecordResource.LEADS,
+    );
+    if (scope === RecordScope.ORGANIZATION) return {};
+    if (scope === RecordScope.OWN) return { ownerId: userId };
+    return this.teamOwnerFilter(userId, organizationId);
+  }
+
+  async dealWhere(): Promise<Prisma.DealWhereInput> {
+    const { scope, userId, organizationId } = await this.requireScope(
+      RecordResource.DEALS,
+    );
+    if (scope === RecordScope.ORGANIZATION) return {};
+    if (scope === RecordScope.OWN) return { ownerId: userId };
+    return this.teamOwnerFilter(userId, organizationId);
+  }
+
+  async taskWhere(): Promise<Prisma.TaskWhereInput> {
+    const { scope, userId, organizationId } = await this.requireScope(
+      RecordResource.TASKS,
+    );
+    if (scope === RecordScope.ORGANIZATION) return {};
+    if (scope === RecordScope.OWN) return { assigneeId: userId };
+    return {
+      OR: [
+        { assigneeId: userId },
+        {
+          assignee: {
+            teamMemberships: {
+              some: {
+                organizationId,
+                team: {
+                  status: 'ACTIVE' as const,
+                  members: { some: { organizationId, userId } },
+                },
+              },
+            },
+          },
+        },
+      ],
+    };
   }
 
   async canGrant(
