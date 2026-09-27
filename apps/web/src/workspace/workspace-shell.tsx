@@ -298,8 +298,6 @@ export function WorkspaceShell({
 }
 
 function SettingsHome() {
-  const { can } = useAuthorization();
-
   return (
     <section>
       <div className="crm-page-heading">
