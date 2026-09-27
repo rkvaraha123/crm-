@@ -6,6 +6,8 @@ import { createApiClient, CurrentUser, selectOrganization } from './api-client';
 import { useAuth } from './auth/auth-context';
 import { AuthorizationProvider } from './authorization/authorization-context';
 import { AuthorizationAdmin } from './authorization/admin-panel';
+import { CompaniesPanel } from './features/companies/companies-panel';
+import { ContactsPanel } from './features/contacts/contacts-panel';
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
   if (!auth.ready) return <p role="status">Preparing sign-in…</p>;
@@ -23,8 +25,7 @@ function Home() {
       <p className="eyebrow">RK VARAHA / WORKSPACE</p>
       <h1>Your workspace starts here.</h1>
       <p className="intro">
-        Sign in to access your organizations. CRM business features will arrive
-        in a later phase.
+        Sign in to access your organizations, companies, contacts, and CRM administration.
       </p>
       <p role="status" className="my-6 text-slate-600">
         {health.isPending
@@ -186,6 +187,14 @@ export function Workspace() {
                       Your organization workspace is ready.
                     </p>
                   </div>
+                  <CompaniesPanel
+                    api={api}
+                    organizationId={organizationId}
+                  />
+                  <ContactsPanel
+                    api={api}
+                    organizationId={organizationId}
+                  />
                   <AuthorizationAdmin
                     api={api}
                     organizationId={organizationId}
