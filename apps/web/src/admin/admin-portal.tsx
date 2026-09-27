@@ -73,6 +73,19 @@ export function AdminPortal() {
     [auth.session],
   );
 
+  const adminMe = useQuery({
+    queryKey: ['admin', 'me'],
+    queryFn: ({ signal }) => api<AdminUser>('/admin/me', undefined, signal),
+    retry: false,
+    enabled: auth.ready && auth.authenticated,
+  });
+
+  async function logout() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await auth.session.logout();
+  }
+
   if (!auth.ready) {
     return <main className="admin-auth-screen">Preparing admin sign-in…</main>;
   }
@@ -93,18 +106,6 @@ export function AdminPortal() {
         </section>
       </main>
     );
-  }
-
-  const adminMe = useQuery({
-    queryKey: ['admin', 'me'],
-    queryFn: ({ signal }) => api<AdminUser>('/admin/me', undefined, signal),
-    retry: false,
-  });
-
-  async function logout() {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    await auth.session.logout();
   }
 
   if (adminMe.isPending)
