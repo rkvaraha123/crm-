@@ -218,9 +218,7 @@ export function ContactsPanel({
                   <td className="py-3 pr-4 text-slate-600">
                     {contact.email || '—'}
                   </td>
-                  <td className="py-3 pr-4">
-                    {contact.company?.name || '—'}
-                  </td>
+                  <td className="py-3 pr-4">{contact.company?.name || '—'}</td>
                   <td className="py-3 pr-4">{contact.lifecycleStatus}</td>
                   <td className="py-3">
                     {can('contacts.delete') && (
