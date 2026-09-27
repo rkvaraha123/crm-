@@ -32,12 +32,42 @@ export class OrganizationsRepository {
         });
         await tx.pipelineStage.createMany({
           data: [
-            { pipelineId: pipeline.id, name: 'New', position: 1, probability: 10 },
-            { pipelineId: pipeline.id, name: 'Qualified', position: 2, probability: 30 },
-            { pipelineId: pipeline.id, name: 'Proposal', position: 3, probability: 60 },
-            { pipelineId: pipeline.id, name: 'Negotiation', position: 4, probability: 80 },
-            { pipelineId: pipeline.id, name: 'Closed Won', position: 5, probability: 100 },
-            { pipelineId: pipeline.id, name: 'Closed Lost', position: 6, probability: 0 },
+            {
+              pipelineId: pipeline.id,
+              name: 'New',
+              position: 1,
+              probability: 10,
+            },
+            {
+              pipelineId: pipeline.id,
+              name: 'Qualified',
+              position: 2,
+              probability: 30,
+            },
+            {
+              pipelineId: pipeline.id,
+              name: 'Proposal',
+              position: 3,
+              probability: 60,
+            },
+            {
+              pipelineId: pipeline.id,
+              name: 'Negotiation',
+              position: 4,
+              probability: 80,
+            },
+            {
+              pipelineId: pipeline.id,
+              name: 'Closed Won',
+              position: 5,
+              probability: 100,
+            },
+            {
+              pipelineId: pipeline.id,
+              name: 'Closed Lost',
+              position: 6,
+              probability: 0,
+            },
           ],
         });
         return organization;
