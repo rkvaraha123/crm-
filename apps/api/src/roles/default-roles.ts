@@ -84,6 +84,9 @@ const ROLE_SCOPE: Record<string, RecordScope> = {
 const RECORD_RESOURCES = [
   RecordResource.COMPANIES,
   RecordResource.CONTACTS,
+  RecordResource.LEADS,
+  RecordResource.DEALS,
+  RecordResource.TASKS,
 ] as const;
 
 async function mapPermissions(

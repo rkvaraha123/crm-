@@ -7,6 +7,7 @@ import { OrganizationStatus, UserStatus } from '@prisma/client';
 import { PrismaService } from '../common/database/prisma.service';
 import { OrganizationContextService } from '../common/tenant/organization-context.service';
 import { UpdateOrganizationAppearanceDto } from '../organizations/dto/update-organization-appearance.dto';
+import { UpdateOrganizationProductConfigDto } from '../organizations/dto/update-organization-product-config.dto';
 import { ListAdminOrganizationsDto } from './dto/list-admin-organizations.dto';
 import { ListAdminUsersDto } from './dto/list-admin-users.dto';
 
@@ -261,6 +262,35 @@ export class AdminService {
         lastName: true,
         status: true,
       },
+    });
+  }
+
+  async getProductConfig(organizationId: string) {
+    const exists = await this.prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { id: true },
+    });
+    if (!exists) throw new NotFoundException('Organization not found');
+    return this.prisma.organizationProductConfig.upsert({
+      where: { organizationId },
+      create: { organizationId },
+      update: {},
+    });
+  }
+
+  async updateProductConfig(
+    organizationId: string,
+    data: UpdateOrganizationProductConfigDto,
+  ) {
+    const exists = await this.prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { id: true },
+    });
+    if (!exists) throw new NotFoundException('Organization not found');
+    return this.prisma.organizationProductConfig.upsert({
+      where: { organizationId },
+      create: { organizationId, ...data },
+      update: data,
     });
   }
 

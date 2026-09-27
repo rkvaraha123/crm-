@@ -7,9 +7,13 @@ import { useAuthorization } from '../authorization/authorization-context';
 import { AuthorizationAdmin } from '../authorization/admin-panel';
 import { CompaniesPanel } from '../features/companies/companies-panel';
 import { ContactsPanel } from '../features/contacts/contacts-panel';
+import { LeadsPanel } from '../features/leads/leads-panel';
+import { DealsPanel } from '../features/deals/deals-panel';
+import { TasksPanel } from '../features/tasks/tasks-panel';
 import { DashboardPage } from './dashboard-page';
 import { TeamPage } from './team-page';
 import { DEFAULT_APPEARANCE, contrastColor } from './appearance';
+import { DEFAULT_PRODUCT_CONFIG, ProductConfig } from './product-config';
 
 interface WorkspaceShellProps {
   api: ApiClient;
@@ -26,33 +30,8 @@ interface NavItem {
   label: string;
   description: string;
   permission?: string;
+  enabled?: boolean;
 }
-
-const primaryNav: NavItem[] = [
-  {
-    to: '/app/dashboard',
-    label: 'Dashboard',
-    description: 'Overview',
-  },
-  {
-    to: '/app/companies',
-    label: 'Companies',
-    description: 'Accounts',
-    permission: 'companies.read',
-  },
-  {
-    to: '/app/contacts',
-    label: 'Contacts',
-    description: 'People',
-    permission: 'contacts.read',
-  },
-  {
-    to: '/app/team',
-    label: 'Team',
-    description: 'Teams & members',
-    permission: 'teams.read',
-  },
-];
 
 export function WorkspaceShell({
   api,
@@ -66,10 +45,76 @@ export function WorkspaceShell({
   const { can } = useAuthorization();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const visiblePrimary = primaryNav.filter(
-    (item) => !item.permission || can(item.permission),
-  );
   const canOpenSettings = can('settings.read');
+
+  const productConfig = useQuery({
+    queryKey: ['tenant', organizationId, 'product-config'],
+    queryFn: ({ signal }) =>
+      api<ProductConfig>(
+        `/organizations/${organizationId}/product-config`,
+        organizationId,
+        signal,
+      ),
+  });
+
+  const product = productConfig.data ?? {
+    ...DEFAULT_PRODUCT_CONFIG,
+    organizationId,
+  };
+
+  const primaryNav: NavItem[] = [
+    {
+      to: '/app/dashboard',
+      label: product.dashboardLabel,
+      description: 'Overview',
+    },
+    {
+      to: '/app/companies',
+      label: product.companiesLabel,
+      description: 'Accounts',
+      permission: 'companies.read',
+      enabled: product.companiesEnabled,
+    },
+    {
+      to: '/app/contacts',
+      label: product.contactsLabel,
+      description: 'People',
+      permission: 'contacts.read',
+      enabled: product.contactsEnabled,
+    },
+    {
+      to: '/app/leads',
+      label: product.leadsLabel,
+      description: 'Prospects',
+      permission: 'leads.read',
+      enabled: product.leadsEnabled,
+    },
+    {
+      to: '/app/deals',
+      label: product.dealsLabel,
+      description: 'Pipeline',
+      permission: 'deals.read',
+      enabled: product.dealsEnabled,
+    },
+    {
+      to: '/app/tasks',
+      label: product.tasksLabel,
+      description: 'Follow-ups',
+      permission: 'tasks.read',
+      enabled: product.tasksEnabled,
+    },
+    {
+      to: '/app/team',
+      label: 'Team',
+      description: 'Teams & members',
+      permission: 'teams.read',
+    },
+  ];
+
+  const visiblePrimary = primaryNav.filter(
+    (item) =>
+      item.enabled !== false && (!item.permission || can(item.permission)),
+  );
 
   const appearance = useQuery({
     queryKey: ['tenant', organizationId, 'appearance'],
@@ -236,7 +281,7 @@ export function WorkspaceShell({
             <Route
               path="companies"
               element={
-                can('companies.read') ? (
+                product.companiesEnabled && can('companies.read') ? (
                   <CompaniesPanel api={api} organizationId={organizationId} />
                 ) : (
                   <Navigate to="/app/dashboard" replace />
@@ -246,8 +291,38 @@ export function WorkspaceShell({
             <Route
               path="contacts"
               element={
-                can('contacts.read') ? (
+                product.contactsEnabled && can('contacts.read') ? (
                   <ContactsPanel api={api} organizationId={organizationId} />
+                ) : (
+                  <Navigate to="/app/dashboard" replace />
+                )
+              }
+            />
+            <Route
+              path="leads"
+              element={
+                product.leadsEnabled && can('leads.read') ? (
+                  <LeadsPanel api={api} organizationId={organizationId} />
+                ) : (
+                  <Navigate to="/app/dashboard" replace />
+                )
+              }
+            />
+            <Route
+              path="deals"
+              element={
+                product.dealsEnabled && can('deals.read') ? (
+                  <DealsPanel api={api} organizationId={organizationId} />
+                ) : (
+                  <Navigate to="/app/dashboard" replace />
+                )
+              }
+            />
+            <Route
+              path="tasks"
+              element={
+                product.tasksEnabled && can('tasks.read') ? (
+                  <TasksPanel api={api} organizationId={organizationId} />
                 ) : (
                   <Navigate to="/app/dashboard" replace />
                 )

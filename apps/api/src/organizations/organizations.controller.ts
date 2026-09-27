@@ -19,6 +19,7 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { PageDto } from '../common/dto/page.dto';
 import { UpdateOrganizationAppearanceDto } from './dto/update-organization-appearance.dto';
+import { UpdateOrganizationProductConfigDto } from './dto/update-organization-product-config.dto';
 import { PermissionGuard } from '../authorization/permission.guard';
 import { RequirePermissions } from '../authorization/require-permissions.decorator';
 @Controller('organizations')
@@ -46,6 +47,26 @@ export class OrganizationsController {
   ) {
     void _organizationId;
     return this.service.getAppearance();
+  }
+
+  @Get(':organizationId/product-config')
+  @Access({ kind: 'tenant', parameter: 'organizationId' })
+  getProductConfig(
+    @Param('organizationId', ParseUUIDPipe) _organizationId: string,
+  ) {
+    void _organizationId;
+    return this.service.getProductConfig();
+  }
+
+  @Put(':organizationId/product-config')
+  @Access({ kind: 'tenant', parameter: 'organizationId' })
+  @RequirePermissions('settings.update')
+  updateProductConfig(
+    @Param('organizationId', ParseUUIDPipe) _organizationId: string,
+    @Body() data: UpdateOrganizationProductConfigDto,
+  ) {
+    void _organizationId;
+    return this.service.updateProductConfig(data);
   }
 
   @Put(':organizationId/appearance')

@@ -15,6 +15,7 @@ import { Access } from '../common/tenant/tenant-access.decorator';
 import { TenantAccessGuard } from '../common/tenant/tenant-access.guard';
 import { OrganizationContextInterceptor } from '../common/tenant/organization-context.interceptor';
 import { UpdateOrganizationAppearanceDto } from '../organizations/dto/update-organization-appearance.dto';
+import { UpdateOrganizationProductConfigDto } from '../organizations/dto/update-organization-product-config.dto';
 import { AdminService } from './admin.service';
 import { ListAdminOrganizationsDto } from './dto/list-admin-organizations.dto';
 import { ListAdminUsersDto } from './dto/list-admin-users.dto';
@@ -49,6 +50,21 @@ export class AdminController {
     @Body() data: UpdateOrganizationStatusDto,
   ) {
     return this.service.updateOrganizationStatus(organizationId, data.status);
+  }
+
+  @Get('organizations/:organizationId/product-config')
+  getProductConfig(
+    @Param('organizationId', ParseUUIDPipe) organizationId: string,
+  ) {
+    return this.service.getProductConfig(organizationId);
+  }
+
+  @Put('organizations/:organizationId/product-config')
+  updateProductConfig(
+    @Param('organizationId', ParseUUIDPipe) organizationId: string,
+    @Body() data: UpdateOrganizationProductConfigDto,
+  ) {
+    return this.service.updateProductConfig(organizationId, data);
   }
 
   @Get('organizations/:organizationId/appearance')
