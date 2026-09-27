@@ -150,9 +150,7 @@ describe('CRM core companies, contacts, and teams', () => {
     );
 
     await request(app.getHttpServer())
-      .patch(
-        `/api/v1/organizations/${orgA}/companies/${created.body.id}`,
-      )
+      .patch(`/api/v1/organizations/${orgA}/companies/${created.body.id}`)
       .set(auth('crm-admin-a', orgA))
       .send({ lifecycleStatus: 'CUSTOMER' })
       .expect(200)
@@ -161,16 +159,12 @@ describe('CRM core companies, contacts, and teams', () => {
       });
 
     await request(app.getHttpServer())
-      .delete(
-        `/api/v1/organizations/${orgA}/companies/${created.body.id}`,
-      )
+      .delete(`/api/v1/organizations/${orgA}/companies/${created.body.id}`)
       .set(auth('crm-admin-a', orgA))
       .expect(200);
 
     await request(app.getHttpServer())
-      .get(
-        `/api/v1/organizations/${orgA}/companies/${created.body.id}`,
-      )
+      .get(`/api/v1/organizations/${orgA}/companies/${created.body.id}`)
       .set(auth('crm-admin-a', orgA))
       .expect(404);
   });
@@ -183,9 +177,7 @@ describe('CRM core companies, contacts, and teams', () => {
       .expect(201);
 
     await request(app.getHttpServer())
-      .get(
-        `/api/v1/organizations/${orgB}/companies/${company.body.id}`,
-      )
+      .get(`/api/v1/organizations/${orgB}/companies/${company.body.id}`)
       .set(auth('crm-admin-b', orgB))
       .expect(404);
   });
@@ -222,9 +214,7 @@ describe('CRM core companies, contacts, and teams', () => {
     });
 
     await request(app.getHttpServer())
-      .patch(
-        `/api/v1/organizations/${orgA}/contacts/${contact.body.id}`,
-      )
+      .patch(`/api/v1/organizations/${orgA}/contacts/${contact.body.id}`)
       .set(auth('crm-admin-a', orgA))
       .send({ companyId: companyB.body.id })
       .expect(400);
@@ -262,17 +252,13 @@ describe('CRM core companies, contacts, and teams', () => {
       .expect(201);
 
     await request(app.getHttpServer())
-      .post(
-        `/api/v1/organizations/${orgA}/teams/${team.body.id}/members`,
-      )
+      .post(`/api/v1/organizations/${orgA}/teams/${team.body.id}/members`)
       .set(auth('crm-admin-a', orgA))
       .send({ userId: viewerA })
       .expect(201);
 
     const members = await request(app.getHttpServer())
-      .get(
-        `/api/v1/organizations/${orgA}/teams/${team.body.id}/members`,
-      )
+      .get(`/api/v1/organizations/${orgA}/teams/${team.body.id}/members`)
       .set(auth('crm-admin-a', orgA))
       .expect(200);
     expect(
@@ -280,9 +266,7 @@ describe('CRM core companies, contacts, and teams', () => {
     ).toContain(viewerA);
 
     await request(app.getHttpServer())
-      .post(
-        `/api/v1/organizations/${orgA}/teams/${team.body.id}/members`,
-      )
+      .post(`/api/v1/organizations/${orgA}/teams/${team.body.id}/members`)
       .set(auth('crm-admin-a', orgA))
       .send({ userId: adminB })
       .expect(400);
