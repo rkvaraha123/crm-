@@ -200,7 +200,7 @@ describe('CRM platform admin control plane', () => {
     const admin = list.body.find(
       (user: { id: string }) => user.id === platformAdminId,
     );
-    expect(admin.userRoles.length).toBeGreaterThan(0);
+    expect(admin.platformAdmin).toBe(true);
 
     await request(app.getHttpServer())
       .patch(`/api/v1/admin/users/${platformAdminId}/status`)
