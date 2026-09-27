@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
   Post,
+  Put,
   Query,
   UseGuards,
   UseInterceptors,
@@ -16,6 +18,7 @@ import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { PageDto } from '../common/dto/page.dto';
+import { UpdateOrganizationAppearanceDto } from './dto/update-organization-appearance.dto';
 import { PermissionGuard } from '../authorization/permission.guard';
 import { RequirePermissions } from '../authorization/require-permissions.decorator';
 @Controller('organizations')
@@ -35,6 +38,37 @@ export class OrganizationsController {
     void _id;
     return this.service.findCurrent();
   }
+
+  @Get(':organizationId/appearance')
+  @Access({ kind: 'tenant', parameter: 'organizationId' })
+  getAppearance(
+    @Param('organizationId', ParseUUIDPipe) _organizationId: string,
+  ) {
+    void _organizationId;
+    return this.service.getAppearance();
+  }
+
+  @Put(':organizationId/appearance')
+  @Access({ kind: 'tenant', parameter: 'organizationId' })
+  @RequirePermissions('settings.update')
+  updateAppearance(
+    @Param('organizationId', ParseUUIDPipe) _organizationId: string,
+    @Body() data: UpdateOrganizationAppearanceDto,
+  ) {
+    void _organizationId;
+    return this.service.updateAppearance(data);
+  }
+
+  @Delete(':organizationId/appearance')
+  @Access({ kind: 'tenant', parameter: 'organizationId' })
+  @RequirePermissions('settings.update')
+  resetAppearance(
+    @Param('organizationId', ParseUUIDPipe) _organizationId: string,
+  ) {
+    void _organizationId;
+    return this.service.resetAppearance();
+  }
+
   @Post(':organizationId/members')
   @Access({
     kind: 'tenant',
