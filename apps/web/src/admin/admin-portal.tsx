@@ -453,7 +453,6 @@ function AdminUsers({ api }: { api: ApiClient }) {
   );
 }
 
-
 function AdminProducts({ api }: { api: ApiClient }) {
   const queryClient = useQueryClient();
   const organizations = useQuery({
