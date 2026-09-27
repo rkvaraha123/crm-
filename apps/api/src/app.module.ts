@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ActivitiesModule } from './activities/activities.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthorizationModule } from './authorization/authorization.module';
 import { CommonModule } from './common/common.module';
@@ -29,6 +30,7 @@ import { UsersModule } from './users/users.module';
     PermissionsModule,
     HealthModule,
     AuthModule,
+    ActivitiesModule,
     OrganizationsModule,
     UsersModule,
     CompaniesModule,
