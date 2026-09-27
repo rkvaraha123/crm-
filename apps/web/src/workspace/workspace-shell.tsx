@@ -9,7 +9,6 @@ import { CompaniesPanel } from '../features/companies/companies-panel';
 import { ContactsPanel } from '../features/contacts/contacts-panel';
 import { DashboardPage } from './dashboard-page';
 import { TeamPage } from './team-page';
-import { AppearancePage } from './appearance-page';
 import { DEFAULT_APPEARANCE, contrastColor } from './appearance';
 
 interface WorkspaceShellProps {
@@ -71,7 +70,6 @@ export function WorkspaceShell({
     (item) => !item.permission || can(item.permission),
   );
   const canOpenSettings = can('settings.read');
-  const canManageAppearance = can('settings.update');
 
   const appearance = useQuery({
     queryKey: ['tenant', organizationId, 'appearance'],
@@ -143,8 +141,8 @@ export function WorkspaceShell({
                 onClick={() => setMobileOpen(false)}
                 to="/app/settings"
               >
-                <span>Admin Panel</span>
-                <small>Appearance & access</small>
+                <span>Settings</span>
+                <small>Roles & access</small>
               </NavLink>
             </>
           )}
@@ -276,16 +274,6 @@ export function WorkspaceShell({
               }
             />
             <Route
-              path="settings/appearance"
-              element={
-                canManageAppearance ? (
-                  <AppearancePage api={api} organizationId={organizationId} />
-                ) : (
-                  <Navigate to="/app/settings" replace />
-                )
-              }
-            />
-            <Route
               path="settings/roles"
               element={
                 canOpenSettings ? (
@@ -317,21 +305,11 @@ function SettingsHome() {
       <div className="crm-page-heading">
         <div>
           <p className="crm-page-kicker">Administration</p>
-          <h1>Admin Panel</h1>
-          <p>Manage CRM appearance, access, and workspace configuration.</p>
+          <h1>Settings</h1>
+          <p>Manage organization roles, permissions, and workspace access.</p>
         </div>
       </div>
       <div className="crm-settings-grid">
-        {can('settings.update') && (
-          <NavLink className="crm-settings-card" to="/app/settings/appearance">
-            <span className="crm-settings-icon">AP</span>
-            <div>
-              <strong>Appearance</strong>
-              <p>Change workspace name, brand colors, sidebar, and surfaces.</p>
-            </div>
-            <span aria-hidden="true">→</span>
-          </NavLink>
-        )}
         <NavLink className="crm-settings-card" to="/app/settings/roles">
           <span className="crm-settings-icon">RP</span>
           <div>
