@@ -108,13 +108,7 @@ export function TasksPanel({
   });
 
   const update = useMutation({
-    mutationFn: ({
-      id,
-      status,
-    }: {
-      id: string;
-      status: Task['status'];
-    }) =>
+    mutationFn: ({ id, status }: { id: string; status: Task['status'] }) =>
       api<Task>(
         `/organizations/${organizationId}/tasks/${id}`,
         organizationId,
@@ -128,13 +122,7 @@ export function TasksPanel({
   });
 
   const assign = useMutation({
-    mutationFn: ({
-      id,
-      assigneeId,
-    }: {
-      id: string;
-      assigneeId: string;
-    }) =>
+    mutationFn: ({ id, assigneeId }: { id: string; assigneeId: string }) =>
       api<Task>(
         `/organizations/${organizationId}/tasks/${id}/assignee`,
         organizationId,
