@@ -97,7 +97,9 @@ export function WorkspaceShell({
 
           {canOpenSettings && (
             <>
-              <p className="crm-nav-label crm-nav-label-spaced">Administration</p>
+              <p className="crm-nav-label crm-nav-label-spaced">
+                Administration
+              </p>
               <NavLink
                 className={({ isActive }) =>
                   isActive ? 'crm-nav-link is-active' : 'crm-nav-link'
@@ -125,7 +127,10 @@ export function WorkspaceShell({
               <span>{user.email}</span>
             </div>
           </div>
-          <button className="crm-secondary-button w-full" onClick={() => void onLogout()}>
+          <button
+            className="crm-secondary-button w-full"
+            onClick={() => void onLogout()}
+          >
             Sign out
           </button>
         </div>
@@ -238,13 +243,19 @@ export function WorkspaceShell({
               path="settings/roles"
               element={
                 canOpenSettings ? (
-                  <AuthorizationAdmin api={api} organizationId={organizationId} />
+                  <AuthorizationAdmin
+                    api={api}
+                    organizationId={organizationId}
+                  />
                 ) : (
                   <Navigate to="/app/dashboard" replace />
                 )
               }
             />
-            <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
+            <Route
+              path="*"
+              element={<Navigate to="/app/dashboard" replace />}
+            />
           </Routes>
         </main>
       </div>
