@@ -74,7 +74,11 @@ jobs:
         run: npm run db:validate
 
       - name: Formatting
-        run: npm run format:check
+        shell: bash
+        run: |
+          npm run format
+          git diff --check
+          git diff --exit-code
 
       - name: Lint
         run: npm run lint
