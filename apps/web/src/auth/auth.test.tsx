@@ -70,20 +70,20 @@ function mockApi(orgs = organizations, permissions: string[] = []) {
                         surfaceColor: '#ffffff',
                       }
                     : url.includes('/companies') ||
-                      url.includes('/contacts') ||
-                      url.includes('/teams') ||
-                      url.endsWith('/roles') ||
-                      url.endsWith('/permissions') ||
-                      url.endsWith('/members')
-                    ? []
-                    : url.includes('/organizations/')
-                      ? {
-                          id: url.endsWith('/a') ? 'a' : 'b',
-                          name: url.endsWith('/a')
-                            ? 'Organization A'
-                            : 'Organization B',
-                        }
-                      : { status: 'ok' },
+                        url.includes('/contacts') ||
+                        url.includes('/teams') ||
+                        url.endsWith('/roles') ||
+                        url.endsWith('/permissions') ||
+                        url.endsWith('/members')
+                      ? []
+                      : url.includes('/organizations/')
+                        ? {
+                            id: url.endsWith('/a') ? 'a' : 'b',
+                            name: url.endsWith('/a')
+                              ? 'Organization A'
+                              : 'Organization B',
+                          }
+                        : { status: 'ok' },
           ),
           { status: 200 },
         ),
