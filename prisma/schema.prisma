@@ -88,6 +88,7 @@ model Organization {
   companies   Company[]
   contacts    Contact[]
   activities  Activity[]
+  appearance  OrganizationAppearance?
 
   @@index([status])
 }
@@ -285,4 +286,18 @@ model Activity {
 
   @@index([organizationId, subjectType, subjectId, archivedAt, createdAt])
   @@index([organizationId, actorUserId, createdAt])
+}
+
+model OrganizationAppearance {
+  id               String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId   String       @unique @db.Uuid
+  workspaceName    String       @default("RK Varaha CRM") @db.VarChar(80)
+  primaryColor     String       @default("#0f766e") @db.VarChar(7)
+  accentColor      String       @default("#14b8a6") @db.VarChar(7)
+  sidebarColor     String       @default("#0f172a") @db.VarChar(7)
+  pageBackground   String       @default("#f5f7fb") @db.VarChar(7)
+  surfaceColor     String       @default("#ffffff") @db.VarChar(7)
+  createdAt        DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime     @updatedAt @db.Timestamptz(3)
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Restrict)
 }

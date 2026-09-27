@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import type { CSSProperties } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 import type { ApiClient, CurrentUser } from '../api-client';
 import { useAuthorization } from '../authorization/authorization-context';
@@ -7,6 +9,8 @@ import { CompaniesPanel } from '../features/companies/companies-panel';
 import { ContactsPanel } from '../features/contacts/contacts-panel';
 import { DashboardPage } from './dashboard-page';
 import { TeamPage } from './team-page';
+import { AppearancePage } from './appearance-page';
+import { DEFAULT_APPEARANCE, contrastColor } from './appearance';
 
 interface WorkspaceShellProps {
   api: ApiClient;
@@ -67,14 +71,46 @@ export function WorkspaceShell({
     (item) => !item.permission || can(item.permission),
   );
   const canOpenSettings = can('settings.read');
+  const canManageAppearance = can('settings.update');
+
+  const appearance = useQuery({
+    queryKey: ['tenant', organizationId, 'appearance'],
+    queryFn: ({ signal }) =>
+      api<{
+        organizationId: string;
+        workspaceName: string;
+        primaryColor: string;
+        accentColor: string;
+        sidebarColor: string;
+        pageBackground: string;
+        surfaceColor: string;
+      }>(`/organizations/${organizationId}/appearance`, organizationId, signal),
+  });
+
+  const theme = appearance.data ?? {
+    ...DEFAULT_APPEARANCE,
+    organizationId,
+  };
+
+  const themeStyle = {
+    '--crm-primary': theme.primaryColor,
+    '--crm-primary-text': contrastColor(theme.primaryColor),
+    '--crm-accent': theme.accentColor,
+    '--crm-sidebar': theme.sidebarColor,
+    '--crm-sidebar-text': contrastColor(theme.sidebarColor),
+    '--crm-page': theme.pageBackground,
+    '--crm-page-text': contrastColor(theme.pageBackground),
+    '--crm-surface': theme.surfaceColor,
+    '--crm-surface-text': contrastColor(theme.surfaceColor),
+  } as CSSProperties;
 
   return (
-    <div className="crm-shell">
+    <div className="crm-shell" style={themeStyle}>
       <aside className={mobileOpen ? 'crm-sidebar is-open' : 'crm-sidebar'}>
         <div className="crm-brand">
           <span className="crm-brand-mark">RV</span>
           <div>
-            <strong>RK Varaha CRM</strong>
+            <strong>{theme.workspaceName}</strong>
             <span>Workspace</span>
           </div>
         </div>
@@ -107,8 +143,8 @@ export function WorkspaceShell({
                 onClick={() => setMobileOpen(false)}
                 to="/app/settings"
               >
-                <span>Settings</span>
-                <small>Access & configuration</small>
+                <span>Admin Panel</span>
+                <small>Appearance & access</small>
               </NavLink>
             </>
           )}
@@ -240,6 +276,16 @@ export function WorkspaceShell({
               }
             />
             <Route
+              path="settings/appearance"
+              element={
+                canManageAppearance ? (
+                  <AppearancePage api={api} organizationId={organizationId} />
+                ) : (
+                  <Navigate to="/app/settings" replace />
+                )
+              }
+            />
+            <Route
               path="settings/roles"
               element={
                 canOpenSettings ? (
@@ -264,16 +310,28 @@ export function WorkspaceShell({
 }
 
 function SettingsHome() {
+  const { can } = useAuthorization();
+
   return (
     <section>
       <div className="crm-page-heading">
         <div>
           <p className="crm-page-kicker">Administration</p>
-          <h1>Settings</h1>
-          <p>Manage access and workspace configuration.</p>
+          <h1>Admin Panel</h1>
+          <p>Manage CRM appearance, access, and workspace configuration.</p>
         </div>
       </div>
       <div className="crm-settings-grid">
+        {can('settings.update') && (
+          <NavLink className="crm-settings-card" to="/app/settings/appearance">
+            <span className="crm-settings-icon">AP</span>
+            <div>
+              <strong>Appearance</strong>
+              <p>Change workspace name, brand colors, sidebar, and surfaces.</p>
+            </div>
+            <span aria-hidden="true">→</span>
+          </NavLink>
+        )}
         <NavLink className="crm-settings-card" to="/app/settings/roles">
           <span className="crm-settings-icon">RP</span>
           <div>
