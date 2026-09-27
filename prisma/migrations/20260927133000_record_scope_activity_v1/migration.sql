@@ -71,7 +71,7 @@ ALTER TABLE "Activity"
 
 CREATE FUNCTION enforce_activity_tenant() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
-  IF NOT EXISTS (
+  IF TG_OP = 'INSERT' AND NOT EXISTS (
     SELECT 1 FROM "OrganizationMember"
     WHERE "organizationId" = NEW."organizationId"
       AND "userId" = NEW."actorUserId"
@@ -176,6 +176,23 @@ JOIN "Permission" p ON p."key" = 'activities.read'
 WHERE r."isSystem" = true
   AND r."name" = 'VIEWER'
 ON CONFLICT ("roleId", "permissionId") DO NOTHING;
+
+-- Existing custom roles fail closed at organization boundaries but retain
+-- usable CRM access by defaulting to OWN until an administrator widens them.
+INSERT INTO "RoleRecordScope" (
+  "id", "roleId", "resource", "scope", "createdAt", "updatedAt"
+)
+SELECT
+  gen_random_uuid(),
+  r."id",
+  resource.value::"RecordResource",
+  'OWN'::"RecordScope",
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
+FROM "Role" r
+CROSS JOIN (VALUES ('COMPANIES'), ('CONTACTS')) AS resource(value)
+WHERE r."isSystem" = false
+ON CONFLICT ("roleId", "resource") DO NOTHING;
 
 -- Default record scopes for current system roles.
 INSERT INTO "RoleRecordScope" (
