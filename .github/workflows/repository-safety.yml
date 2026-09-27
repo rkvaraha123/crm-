@@ -1,0 +1,52 @@
+name: Repository Safety
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  repository-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reject tracked environment secret files
+        shell: bash
+        run: |
+          set -euo pipefail
+          bad_files="$(git ls-files | grep -E '(^|/)\.env($|\.)' | grep -v -E '(^|/)\.env\.example$' || true)"
+          if [ -n "$bad_files" ]; then
+            echo "::error::Environment files must not be tracked:"
+            echo "$bad_files"
+            exit 1
+          fi
+
+      - name: Reject common private-key files
+        shell: bash
+        run: |
+          set -euo pipefail
+          bad_files="$(git ls-files | grep -E '(^|/)(id_rsa|id_ed25519)$|\.(pem|p12|pfx|key)$' || true)"
+          if [ -n "$bad_files" ]; then
+            echo "::error::Potential private-key material is tracked:"
+            echo "$bad_files"
+            exit 1
+          fi
+
+      - name: Repository artifact sanity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f package.json
+          test -f package-lock.json
+          test -f compose.yaml
+          test -f .env.example
+          test -f SECURITY.md
+          echo "Repository safety baseline passed."
