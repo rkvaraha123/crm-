@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ApiClient } from '../../api-client';
 import { useAuthorization } from '../../authorization/authorization-context';
+import { ActivityPanel } from '../activities/activity-panel';
 
 interface CompanyOption {
   id: string;
@@ -39,6 +40,7 @@ export function ContactsPanel({
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [companyId, setCompanyId] = useState('');
+  const [selected, setSelected] = useState<Contact | null>(null);
 
   const contacts = useQuery({
     queryKey: ['tenant', organizationId, 'contacts', search],
@@ -97,10 +99,12 @@ export function ContactsPanel({
         undefined,
         { method: 'DELETE' },
       ),
-    onSuccess: () =>
-      queryClient.invalidateQueries({
+    onSuccess: (_data, contactId) => {
+      if (selected?.id === contactId) setSelected(null);
+      return queryClient.invalidateQueries({
         queryKey: ['tenant', organizationId, 'contacts'],
-      }),
+      });
+    },
   });
 
   if (!can('contacts.read')) return null;
@@ -221,21 +225,40 @@ export function ContactsPanel({
                   <td className="py-3 pr-4">{contact.company?.name || '—'}</td>
                   <td className="py-3 pr-4">{contact.lifecycleStatus}</td>
                   <td className="py-3">
-                    {can('contacts.delete') && (
-                      <button
-                        disabled={archive.isPending}
-                        onClick={() => archive.mutate(contact.id)}
-                        type="button"
-                      >
-                        Archive
-                      </button>
-                    )}
+                    <div className="flex flex-wrap gap-2">
+                      {can('activities.read') && (
+                        <button
+                          onClick={() => setSelected(contact)}
+                          type="button"
+                        >
+                          Timeline
+                        </button>
+                      )}
+                      {can('contacts.delete') && (
+                        <button
+                          disabled={archive.isPending}
+                          onClick={() => archive.mutate(contact.id)}
+                          type="button"
+                        >
+                          Archive
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+      {selected && (
+        <ActivityPanel
+          api={api}
+          organizationId={organizationId}
+          subjectKind="contacts"
+          subjectId={selected.id}
+          title={`${selected.firstName} ${selected.lastName}`}
+        />
       )}
     </section>
   );

@@ -19,6 +19,10 @@ export class RolesRepository {
           orderBy: { permission: { key: 'asc' } },
           select: { permission: { select: { id: true, key: true } } },
         },
+        recordScopes: {
+          orderBy: { resource: 'asc' },
+          select: { resource: true, scope: true },
+        },
       },
     });
   }

@@ -446,13 +446,13 @@ describe('PostgreSQL tenant foundation and API', () => {
       ),
     ).toBe(true);
   });
-  it('seeds exactly all 37 permission keys', async () => {
+  it('seeds the complete permission catalog exactly once', async () => {
     await prisma.$transaction((tx) => seedFoundation(tx));
     const permissions = await prisma.permission.findMany();
     expect(permissions.map((p) => p.key).sort()).toEqual(
       [...PERMISSION_KEYS].sort(),
     );
-    expect(permissions).toHaveLength(37);
+    expect(permissions).toHaveLength(PERMISSION_KEYS.length);
   });
   it('seeds all eight default role names and sensible mappings', async () => {
     const organization = await prisma.organization.findUniqueOrThrow({

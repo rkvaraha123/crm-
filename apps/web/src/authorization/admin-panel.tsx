@@ -7,12 +7,18 @@ interface Permission {
   id: string;
   key: string;
 }
+type RecordScope = 'OWN' | 'TEAM' | 'ORGANIZATION';
+
 interface Role {
   id: string;
   name: string;
   description?: string | null;
   isSystem: boolean;
   permissions: { permission: Permission }[];
+  recordScopes: {
+    resource: 'COMPANIES' | 'CONTACTS';
+    scope: RecordScope;
+  }[];
 }
 interface Member {
   user: { id: string; email: string; firstName: string; lastName: string };
@@ -34,9 +40,25 @@ function CustomRoleEditor({
   const [selected, setSelected] = useState(
     role.permissions.map(({ permission }) => permission.id),
   );
+  const [companiesScope, setCompaniesScope] = useState<RecordScope>(
+    role.recordScopes.find(({ resource }) => resource === 'COMPANIES')?.scope ??
+      'OWN',
+  );
+  const [contactsScope, setContactsScope] = useState<RecordScope>(
+    role.recordScopes.find(({ resource }) => resource === 'CONTACTS')?.scope ??
+      'OWN',
+  );
   useEffect(() => {
     setName(role.name);
     setSelected(role.permissions.map(({ permission }) => permission.id));
+    setCompaniesScope(
+      role.recordScopes.find(({ resource }) => resource === 'COMPANIES')
+        ?.scope ?? 'OWN',
+    );
+    setContactsScope(
+      role.recordScopes.find(({ resource }) => resource === 'CONTACTS')
+        ?.scope ?? 'OWN',
+    );
   }, [role]);
   const save = useMutation({
     mutationFn: async () => {
@@ -49,11 +71,23 @@ function CustomRoleEditor({
           body: JSON.stringify({ name }),
         },
       );
-      return api(
+      await api(
         `/organizations/${organizationId}/roles/${role.id}/permissions`,
         organizationId,
         undefined,
         { method: 'PUT', body: JSON.stringify({ permissionIds: selected }) },
+      );
+      return api(
+        `/organizations/${organizationId}/roles/${role.id}/record-scopes`,
+        organizationId,
+        undefined,
+        {
+          method: 'PUT',
+          body: JSON.stringify({
+            companies: companiesScope,
+            contacts: contactsScope,
+          }),
+        },
       );
     },
     onSuccess: () =>
@@ -103,6 +137,36 @@ function CustomRoleEditor({
             {permission.key}
           </label>
         ))}
+      </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <label className="text-sm font-semibold">
+          Company access
+          <select
+            className="mt-2 block w-full rounded border p-2"
+            value={companiesScope}
+            onChange={(event) =>
+              setCompaniesScope(event.target.value as RecordScope)
+            }
+          >
+            <option value="OWN">Own records</option>
+            <option value="TEAM">Own + team records</option>
+            <option value="ORGANIZATION">All organization records</option>
+          </select>
+        </label>
+        <label className="text-sm font-semibold">
+          Contact access
+          <select
+            className="mt-2 block w-full rounded border p-2"
+            value={contactsScope}
+            onChange={(event) =>
+              setContactsScope(event.target.value as RecordScope)
+            }
+          >
+            <option value="OWN">Own records</option>
+            <option value="TEAM">Own + team records</option>
+            <option value="ORGANIZATION">All organization records</option>
+          </select>
+        </label>
       </div>
       <div className="mt-4 flex gap-3">
         <button disabled={save.isPending} onClick={() => save.mutate()}>
@@ -220,6 +284,14 @@ export function AuthorizationAdmin({
             {role.permissions
               .map(({ permission }) => permission.key)
               .join(', ') || 'No permissions'}
+            <span className="ml-2 text-sm text-slate-500">
+              {role.recordScopes
+                .map(
+                  ({ resource, scope }) =>
+                    `${resource.toLowerCase()}: ${scope.toLowerCase()}`,
+                )
+                .join(' · ')}
+            </span>
           </li>
         ))}
       </ul>

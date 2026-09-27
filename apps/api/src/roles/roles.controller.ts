@@ -22,6 +22,7 @@ import { RequirePermissions } from '../authorization/require-permissions.decorat
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { UpdateRolePermissionsDto } from './dto/update-role-permissions.dto';
+import { UpdateRoleRecordScopesDto } from './dto/update-role-record-scopes.dto';
 @Controller('organizations/:organizationId/roles')
 @UseGuards(TenantAccessGuard, PermissionGuard)
 @UseInterceptors(OrganizationContextInterceptor)
@@ -74,6 +75,18 @@ export class RolesController {
   ) {
     void _organizationId;
     return this.service.replacePermissions(roleId, data);
+  }
+
+  @Put(':roleId/record-scopes')
+  @Access({ kind: 'tenant', parameter: 'organizationId' })
+  @RequirePermissions('settings.update')
+  replaceRecordScopes(
+    @Param('organizationId', ParseUUIDPipe) _organizationId: string,
+    @Param('roleId', ParseUUIDPipe) roleId: string,
+    @Body() data: UpdateRoleRecordScopesDto,
+  ) {
+    void _organizationId;
+    return this.service.replaceRecordScopes(roleId, data);
   }
 
   @Delete(':roleId')

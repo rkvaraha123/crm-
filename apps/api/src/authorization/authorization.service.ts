@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
+import { RecordScopeService } from './record-scope.service';
 import { PrismaService } from '../common/database/prisma.service';
 import type { PermissionKey } from '../permissions/default-permissions';
 
@@ -12,7 +13,10 @@ type DatabaseClient = PrismaService | Prisma.TransactionClient;
 
 @Injectable()
 export class AuthorizationService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly recordScope: RecordScopeService,
+  ) {}
 
   async isPlatformAdmin(userId: string) {
     return (
@@ -120,6 +124,7 @@ export class AuthorizationService {
       select: {
         id: true,
         permissions: { select: { permission: { select: { key: true } } } },
+        recordScopes: { select: { resource: true, scope: true } },
       },
     });
     if (roles.length !== roleIds.length)
@@ -136,6 +141,21 @@ export class AuthorizationService {
       )
     )
       throw new ForbiddenException('Role assignment denied');
+
+    for (const role of roles) {
+      for (const { resource, scope } of role.recordScopes) {
+        if (
+          !(await this.recordScope.canGrant(
+            actorUserId,
+            organizationId,
+            resource,
+            scope,
+            tx,
+          ))
+        )
+          throw new ForbiddenException('Role assignment denied');
+      }
+    }
     return roles;
   }
 
