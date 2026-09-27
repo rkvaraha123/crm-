@@ -59,7 +59,17 @@ function mockApi(orgs = organizations, permissions: string[] = []) {
                 ? { permissions }
                 : url.endsWith('/me/record-scopes')
                   ? { companies: 'ORGANIZATION', contacts: 'ORGANIZATION' }
-                  : url.includes('/companies') ||
+                  : url.endsWith('/appearance')
+                    ? {
+                        organizationId: 'a',
+                        workspaceName: 'RK Varaha CRM',
+                        primaryColor: '#0f766e',
+                        accentColor: '#14b8a6',
+                        sidebarColor: '#0f172a',
+                        pageBackground: '#f5f7fb',
+                        surfaceColor: '#ffffff',
+                      }
+                    : url.includes('/companies') ||
                       url.includes('/contacts') ||
                       url.includes('/teams') ||
                       url.endsWith('/roles') ||
@@ -132,7 +142,7 @@ describe('authentication and organization UI', () => {
       ['settings.read', 'settings.update', 'users.read'],
     );
     await setup();
-    fireEvent.click(await screen.findByRole('link', { name: /Settings/ }));
+    fireEvent.click(await screen.findByRole('link', { name: /Admin Panel/ }));
     fireEvent.click(
       await screen.findByRole('link', { name: /Roles & Permissions/ }),
     );
@@ -143,7 +153,7 @@ describe('authentication and organization UI', () => {
     mockApi([organizations[0]], ['teams.read']);
     await setup();
     await screen.findByText('Organization A');
-    expect(screen.queryByRole('link', { name: /Settings/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: /Admin Panel/ })).toBeNull();
   });
   it('requires selection for multiple organizations and refreshes tenant data', async () => {
     mockApi();
