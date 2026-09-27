@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { ActivitySubjectType, ActivityType } from '@prisma/client';
 import { RecordScopeService } from '../authorization/record-scope.service';
 import { PrismaService } from '../common/database/prisma.service';
 import { OrganizationContextService } from '../common/tenant/organization-context.service';
@@ -101,41 +102,82 @@ export class ContactsRepository {
     if (data.companyId) await this.assertCompany(data.companyId);
     const context = this.context.current();
     const organizationId = this.context.requireOrganization();
-    return this.prisma.contact.create({
-      data: {
-        ...data,
-        organizationId,
-        ownerId: context.userId,
-      },
-      include: {
-        owner: { select: ownerSelect },
-        company: { select: companySelect },
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const contact = await tx.contact.create({
+        data: {
+          ...data,
+          organizationId,
+          ownerId: context.userId,
+        },
+        include: {
+          owner: { select: ownerSelect },
+          company: { select: companySelect },
+        },
+      });
+      await tx.activity.create({
+        data: {
+          organizationId,
+          actorUserId: context.userId,
+          subjectType: ActivitySubjectType.CONTACT,
+          subjectId: contact.id,
+          type: ActivityType.CONTACT_CREATED,
+        },
+      });
+      return contact;
     });
   }
 
   async update(id: string, data: UpdateContactDto) {
     const existing = await this.find(id);
     if (data.companyId) await this.assertCompany(data.companyId);
-    return this.prisma.contact.update({
-      where: { id: existing.id },
-      data,
-      include: {
-        owner: { select: ownerSelect },
-        company: { select: companySelect },
-      },
+    const context = this.context.current();
+    const organizationId = this.context.requireOrganization();
+    return this.prisma.$transaction(async (tx) => {
+      const contact = await tx.contact.update({
+        where: { id: existing.id },
+        data,
+        include: {
+          owner: { select: ownerSelect },
+          company: { select: companySelect },
+        },
+      });
+      await tx.activity.create({
+        data: {
+          organizationId,
+          actorUserId: context.userId,
+          subjectType: ActivitySubjectType.CONTACT,
+          subjectId: contact.id,
+          type: ActivityType.CONTACT_UPDATED,
+          metadata: { fields: Object.keys(data) },
+        },
+      });
+      return contact;
     });
   }
 
   async archive(id: string) {
     const existing = await this.find(id);
-    return this.prisma.contact.update({
-      where: { id: existing.id },
-      data: { archivedAt: new Date() },
-      include: {
-        owner: { select: ownerSelect },
-        company: { select: companySelect },
-      },
+    const context = this.context.current();
+    const organizationId = this.context.requireOrganization();
+    return this.prisma.$transaction(async (tx) => {
+      const contact = await tx.contact.update({
+        where: { id: existing.id },
+        data: { archivedAt: new Date() },
+        include: {
+          owner: { select: ownerSelect },
+          company: { select: companySelect },
+        },
+      });
+      await tx.activity.create({
+        data: {
+          organizationId,
+          actorUserId: context.userId,
+          subjectType: ActivitySubjectType.CONTACT,
+          subjectId: contact.id,
+          type: ActivityType.CONTACT_ARCHIVED,
+        },
+      });
+      return contact;
     });
   }
 }
