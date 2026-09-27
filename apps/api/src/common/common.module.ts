@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
-// Phase 1 boundary; no business endpoints or authentication behavior yet.
-@Module({})
+import { Global, Module } from '@nestjs/common';
+import { ProductFeatureService } from './product-feature.service';
+
+@Global()
+@Module({
+  providers: [ProductFeatureService],
+  exports: [ProductFeatureService],
+})
 export class CommonModule {}
