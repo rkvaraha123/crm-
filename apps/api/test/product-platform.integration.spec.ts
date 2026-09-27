@@ -171,9 +171,7 @@ describe('CRM product platform sales flow', () => {
       .expect(201);
 
     await request(app.getHttpServer())
-      .patch(
-        `/api/v1/organizations/${organizationId}/leads/${lead.body.id}`,
-      )
+      .patch(`/api/v1/organizations/${organizationId}/leads/${lead.body.id}`)
       .set(auth('product-sales'))
       .set('X-Organization-Id', organizationId)
       .send({ status: 'QUALIFIED' })
@@ -206,9 +204,7 @@ describe('CRM product platform sales flow', () => {
       .expect(201);
 
     await request(app.getHttpServer())
-      .patch(
-        `/api/v1/organizations/${organizationId}/deals/${deal.body.id}`,
-      )
+      .patch(`/api/v1/organizations/${organizationId}/deals/${deal.body.id}`)
       .set(auth('product-sales'))
       .set('X-Organization-Id', organizationId)
       .send({ stageId: pipeline.stages[1].id })
@@ -236,9 +232,7 @@ describe('CRM product platform sales flow', () => {
     });
 
     await request(app.getHttpServer())
-      .patch(
-        `/api/v1/organizations/${organizationId}/tasks/${task.body.id}`,
-      )
+      .patch(`/api/v1/organizations/${organizationId}/tasks/${task.body.id}`)
       .set(auth('product-sales'))
       .set('X-Organization-Id', organizationId)
       .send({ status: 'COMPLETED' })
