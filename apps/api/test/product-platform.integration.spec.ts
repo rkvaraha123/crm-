@@ -244,6 +244,15 @@ describe('CRM product platform sales flow', () => {
   });
 
   it('rejects cross-tenant associations in deals', async () => {
+    await prisma.organizationMember.create({
+      data: {
+        organizationId: foreignOrganizationId,
+        userId: salesUserId,
+        status: 'ACTIVE',
+        joinedAt: new Date(),
+      },
+    });
+
     const foreignCompany = await prisma.company.create({
       data: {
         organizationId: foreignOrganizationId,
