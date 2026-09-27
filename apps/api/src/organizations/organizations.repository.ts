@@ -7,6 +7,7 @@ import { createDefaultRoles } from '../roles/default-roles';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateOrganizationAppearanceDto } from './dto/update-organization-appearance.dto';
+import { UpdateOrganizationProductConfigDto } from './dto/update-organization-product-config.dto';
 @Injectable()
 export class OrganizationsRepository {
   constructor(
@@ -19,6 +20,26 @@ export class OrganizationsRepository {
       async (tx) => {
         const organization = await tx.organization.create({ data });
         await createDefaultRoles(tx, organization.id);
+        await tx.organizationProductConfig.create({
+          data: { organizationId: organization.id },
+        });
+        const pipeline = await tx.pipeline.create({
+          data: {
+            organizationId: organization.id,
+            name: 'Sales Pipeline',
+            isDefault: true,
+          },
+        });
+        await tx.pipelineStage.createMany({
+          data: [
+            { pipelineId: pipeline.id, name: 'New', position: 1, probability: 10 },
+            { pipelineId: pipeline.id, name: 'Qualified', position: 2, probability: 30 },
+            { pipelineId: pipeline.id, name: 'Proposal', position: 3, probability: 60 },
+            { pipelineId: pipeline.id, name: 'Negotiation', position: 4, probability: 80 },
+            { pipelineId: pipeline.id, name: 'Closed Won', position: 5, probability: 100 },
+            { pipelineId: pipeline.id, name: 'Closed Lost', position: 6, probability: 0 },
+          ],
+        });
         return organization;
       },
       { timeout: 30000 },
@@ -56,6 +77,24 @@ export class OrganizationsRepository {
             surfaceColor: '#ffffff',
           },
       );
+  }
+
+  getProductConfig() {
+    const organizationId = this.context.requireOrganization();
+    return this.prisma.organizationProductConfig.upsert({
+      where: { organizationId },
+      create: { organizationId },
+      update: {},
+    });
+  }
+
+  updateProductConfig(data: UpdateOrganizationProductConfigDto) {
+    const organizationId = this.context.requireOrganization();
+    return this.prisma.organizationProductConfig.upsert({
+      where: { organizationId },
+      create: { organizationId, ...data },
+      update: data,
+    });
   }
 
   updateAppearance(data: UpdateOrganizationAppearanceDto) {
