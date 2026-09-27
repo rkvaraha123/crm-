@@ -154,7 +154,10 @@ export function Workspace() {
           <p>{me.error.message}</p>
           <div className="mt-6 flex gap-3">
             <button onClick={() => void me.refetch()}>Try again</button>
-            <button className="crm-secondary-button" onClick={() => void logout()}>
+            <button
+              className="crm-secondary-button"
+              onClick={() => void logout()}
+            >
               Sign out
             </button>
           </div>
@@ -216,8 +219,8 @@ export function Workspace() {
           <p className="crm-page-kicker">RK VARAHA / CRM</p>
           <h1>Workspace unavailable</h1>
           <p>
-            Your account is signed in, but organization permissions could not
-            be loaded.
+            Your account is signed in, but organization permissions could not be
+            loaded.
           </p>
           <button className="mt-6" onClick={() => void logout()}>
             Sign out
