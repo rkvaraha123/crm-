@@ -1,5 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ActivitySubjectType, ActivityType, CustomFieldEntity } from '@prisma/client';
+import {
+  ActivitySubjectType,
+  ActivityType,
+  CustomFieldEntity,
+} from '@prisma/client';
 import { RecordScopeService } from '../authorization/record-scope.service';
 import { PrismaService } from '../common/database/prisma.service';
 import { OrganizationContextService } from '../common/tenant/organization-context.service';
