@@ -18,10 +18,14 @@ import { TeamsService } from './teams.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { AddTeamMemberDto } from './dto/add-team-member.dto';
 import { PermissionGuard } from '../authorization/permission.guard';
+import { CrmModuleGuard } from '../configuration/crm-module.guard';
+import { RequireCrmModule } from '../configuration/require-crm-module.decorator';
+import { CrmModuleKey } from '@prisma/client';
 import { RequirePermissions } from '../authorization/require-permissions.decorator';
 
 @Controller('organizations/:organizationId/teams')
-@UseGuards(TenantAccessGuard, PermissionGuard)
+@RequireCrmModule(CrmModuleKey.TEAM)
+@UseGuards(TenantAccessGuard, CrmModuleGuard, PermissionGuard)
 @UseInterceptors(OrganizationContextInterceptor)
 export class TeamsController {
   constructor(private readonly service: TeamsService) {}
