@@ -151,13 +151,25 @@ describe('CRM record scopes and activity timeline', () => {
       .get(`/api/v1/organizations/${organizationId}/me/record-scopes`)
       .set(auth('scope-sales-a'))
       .expect(200);
-    expect(sales.body).toEqual({ companies: 'OWN', contacts: 'OWN' });
+    expect(sales.body).toEqual({
+      companies: 'OWN',
+      contacts: 'OWN',
+      leads: 'OWN',
+      deals: 'OWN',
+      tasks: 'OWN',
+    });
 
     const lead = await request(app.getHttpServer())
       .get(`/api/v1/organizations/${organizationId}/me/record-scopes`)
       .set(auth('scope-team-lead'))
       .expect(200);
-    expect(lead.body).toEqual({ companies: 'TEAM', contacts: 'TEAM' });
+    expect(lead.body).toEqual({
+      companies: 'TEAM',
+      contacts: 'TEAM',
+      leads: 'TEAM',
+      deals: 'TEAM',
+      tasks: 'TEAM',
+    });
 
     const viewer = await request(app.getHttpServer())
       .get(`/api/v1/organizations/${organizationId}/me/record-scopes`)
@@ -166,6 +178,9 @@ describe('CRM record scopes and activity timeline', () => {
     expect(viewer.body).toEqual({
       companies: 'ORGANIZATION',
       contacts: 'ORGANIZATION',
+      leads: 'ORGANIZATION',
+      deals: 'ORGANIZATION',
+      tasks: 'ORGANIZATION',
     });
   });
 
