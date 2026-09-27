@@ -623,7 +623,8 @@ function AdminAppearance({ api }: { api: ApiClient }) {
 function AdminSystem({ api }: { api: ApiClient }) {
   const overview = useQuery({
     queryKey: ['admin', 'system'],
-    queryFn: ({ signal }) => api<Overview>('/admin/overview', undefined, signal),
+    queryFn: ({ signal }) =>
+      api<Overview>('/admin/overview', undefined, signal),
   });
 
   return (
