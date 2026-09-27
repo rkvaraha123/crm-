@@ -62,7 +62,7 @@ interface UserRow {
     status: string;
     organization: { id: string; name: string };
   }[];
-  userRoles: { id: string }[];
+  platformAdmin: boolean;
 }
 
 export function AdminPortal() {
@@ -415,7 +415,7 @@ function AdminUsers({ api }: { api: ApiClient }) {
                   <td>
                     <select
                       aria-label={`Status for ${user.email}`}
-                      disabled={user.userRoles.length > 0}
+                      disabled={user.platformAdmin}
                       value={user.status}
                       onChange={(event) =>
                         updateStatus.mutate({
@@ -432,7 +432,7 @@ function AdminUsers({ api }: { api: ApiClient }) {
                   </td>
                   <td>{user.memberships.length}</td>
                   <td>
-                    {user.userRoles.length > 0 ? (
+                    {user.platformAdmin ? (
                       <span className="admin-platform-badge">SUPER_ADMIN</span>
                     ) : (
                       '—'
