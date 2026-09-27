@@ -28,7 +28,9 @@ apps/
     users/                  Global user controller/service/repository
     teams/                  Scoped team controller/service/repository
     roles/                  Scoped roles and default-role provisioning
-    permissions/            Default permission catalog\n    companies/              Tenant-scoped company/account CRM module\n    contacts/               Tenant-scoped contact CRM module
+    permissions/            Default permission catalog
+    companies/              Tenant-scoped company/account CRM module
+    contacts/               Tenant-scoped contact CRM module
   api/test/                 Real PostgreSQL/API integration suite
   web/                      React + Vite + Tailwind + Router + TanStack Query
   worker/                   Inactive future worker skeleton
