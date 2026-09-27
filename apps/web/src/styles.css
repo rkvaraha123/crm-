@@ -1818,10 +1818,9 @@ a.crm-metric-card:hover {
 
 .admin-module-row {
   display: grid;
-  grid-template-columns: 10rem minmax(10rem, 0.7fr) 6rem minmax(
-      12rem,
-      1fr
-    ) 7rem auto;
+  grid-template-columns:
+    10rem minmax(10rem, 0.7fr) 6rem minmax(12rem, 1fr)
+    7rem auto;
   gap: 0.65rem;
   align-items: end;
   border: 1px solid #e2e8f0;
