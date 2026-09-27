@@ -170,10 +170,7 @@ export class RolesService {
     return role;
   }
 
-  async replaceRecordScopes(
-    roleId: string,
-    data: UpdateRoleRecordScopesDto,
-  ) {
+  async replaceRecordScopes(roleId: string, data: UpdateRoleRecordScopesDto) {
     const context = this.context.current();
     const organizationId = this.context.requireOrganization();
     const role = await this.prisma.$transaction(async (tx) => {
