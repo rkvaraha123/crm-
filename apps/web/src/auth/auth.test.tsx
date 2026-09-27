@@ -57,18 +57,23 @@ function mockApi(orgs = organizations, permissions: string[] = []) {
               ? { ...me, organizations: orgs }
               : url.endsWith('/me/permissions')
                 ? { permissions }
-                : url.endsWith('/roles') ||
-                    url.endsWith('/permissions') ||
-                    url.endsWith('/members')
-                  ? []
-                  : url.includes('/organizations/')
-                    ? {
-                        id: url.endsWith('/a') ? 'a' : 'b',
-                        name: url.endsWith('/a')
-                          ? 'Organization A'
-                          : 'Organization B',
-                      }
-                    : { status: 'ok' },
+                : url.endsWith('/me/record-scopes')
+                  ? { companies: 'ORGANIZATION', contacts: 'ORGANIZATION' }
+                  : url.includes('/companies') ||
+                      url.includes('/contacts') ||
+                      url.includes('/teams') ||
+                      url.endsWith('/roles') ||
+                      url.endsWith('/permissions') ||
+                      url.endsWith('/members')
+                    ? []
+                    : url.includes('/organizations/')
+                      ? {
+                          id: url.endsWith('/a') ? 'a' : 'b',
+                          name: url.endsWith('/a')
+                            ? 'Organization A'
+                            : 'Organization B',
+                        }
+                      : { status: 'ok' },
           ),
           { status: 200 },
         ),
@@ -105,20 +110,21 @@ describe('authentication and organization UI', () => {
     expect(
       await screen.findByRole('button', { name: 'Sign in' }),
     ).toBeDefined();
-    expect(screen.queryByText('Welcome, Test.')).toBeNull();
+    expect(screen.queryByText('Test User')).toBeNull();
   });
   it('renders the authenticated account', async () => {
-    mockApi();
+    mockApi([organizations[0]]);
     await setup();
-    expect(await screen.findByText('Welcome, Test.')).toBeDefined();
+    expect(await screen.findByText('Test User')).toBeDefined();
+    expect(
+      await screen.findByRole('link', { name: /Dashboard/ }),
+    ).toBeDefined();
   });
   it('automatically selects a single organization', async () => {
     mockApi([organizations[0]]);
     await setup();
-    expect(
-      await screen.findByText('Connected to Organization A'),
-    ).toBeDefined();
-    expect(screen.queryByRole('combobox')).toBeNull();
+    expect(await screen.findByText('Organization A')).toBeDefined();
+    expect(screen.queryByLabelText('Organization')).toBeNull();
   });
   it('uses effective permissions for authorization UI', async () => {
     mockApi(
@@ -126,30 +132,42 @@ describe('authentication and organization UI', () => {
       ['settings.read', 'settings.update', 'users.read'],
     );
     await setup();
+    fireEvent.click(await screen.findByRole('link', { name: /Settings/ }));
+    fireEvent.click(
+      await screen.findByRole('link', { name: /Roles & Permissions/ }),
+    );
     expect(await screen.findByText('Roles & Permissions')).toBeDefined();
     expect(screen.getByLabelText('New role name')).toBeDefined();
   });
   it('hides authorization administration without settings.read', async () => {
     mockApi([organizations[0]], ['teams.read']);
     await setup();
-    await screen.findByText('Connected to Organization A');
-    expect(screen.queryByText('Roles & Permissions')).toBeNull();
+    await screen.findByText('Organization A');
+    expect(screen.queryByRole('link', { name: /Settings/ })).toBeNull();
   });
   it('requires selection for multiple organizations and refreshes tenant data', async () => {
     mockApi();
     const { client } = await setup();
-    const select = await screen.findByRole('combobox');
+    const select = await screen.findByLabelText('Organization');
     expect((select as HTMLSelectElement).value).toBe('');
     fireEvent.change(select, { target: { value: 'a' } });
-    await screen.findByText('Connected to Organization A');
-    fireEvent.change(select, { target: { value: 'b' } });
-    await screen.findByText('Connected to Organization B');
-    expect(client.getQueryData(['tenant', 'user', 'a'])).toBeUndefined();
+    await screen.findByRole('link', { name: /Dashboard/ });
+    const topbarSelect = screen.getByLabelText('Organization');
+    expect((topbarSelect as HTMLSelectElement).value).toBe('a');
+    fireEvent.change(topbarSelect, { target: { value: 'b' } });
+    await waitFor(() =>
+      expect(
+        (screen.getByLabelText('Organization') as HTMLSelectElement).value,
+      ).toBe('b'),
+    );
+    expect(
+      client.getQueryData(['tenant', 'user', 'a', 'organization']),
+    ).toBeUndefined();
   });
   it('shows an explicit no-membership state', async () => {
     mockApi([]);
     await setup();
-    expect(await screen.findByText(/No active organizations/)).toBeDefined();
+    expect(await screen.findByText('No active organization')).toBeDefined();
   });
   it('shows a CRM forbidden state after successful identity login', async () => {
     vi.stubGlobal(
@@ -163,7 +181,7 @@ describe('authentication and organization UI', () => {
   it('clears cached user/tenant data and tokens on logout', async () => {
     mockApi([organizations[0]]);
     const { authAdapter, client, session, navigate } = await setup();
-    await screen.findByText('Connected to Organization A');
+    await screen.findByText('Organization A');
     fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
     await waitFor(() =>
       expect(navigate).toHaveBeenCalledWith('https://identity.test/logout'),
@@ -171,7 +189,9 @@ describe('authentication and organization UI', () => {
     expect(session.snapshot().authenticated).toBe(false);
     expect(authAdapter.clearToken).toHaveBeenCalled();
     expect(client.getQueryData(['me'])).toBeUndefined();
-    expect(client.getQueryData(['tenant', 'user', 'a'])).toBeUndefined();
+    expect(
+      client.getQueryData(['tenant', 'user', 'a', 'organization']),
+    ).toBeUndefined();
   });
   it('uses PKCE S256 and initializes the adapter only once', async () => {
     const instance = adapter();
