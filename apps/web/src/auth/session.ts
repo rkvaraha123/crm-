@@ -64,10 +64,10 @@ export class AuthSession {
     })();
     return this.initialization;
   }
-  login = async () => {
+  login = async (redirectPath = '/app') => {
     try {
       await this.adapter.login({
-        redirectUri: `${window.location.origin}/app`,
+        redirectUri: `${window.location.origin}${redirectPath}`,
       });
     } catch {
       this.publish({ ...this.state, error: 'Unable to start sign-in.' });
