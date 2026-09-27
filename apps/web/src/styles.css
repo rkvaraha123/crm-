@@ -1510,7 +1510,6 @@ a.crm-metric-card:hover {
   }
 }
 
-
 .crm-module-card {
   border: 1px solid color-mix(in srgb, var(--crm-surface-text) 12%, transparent);
   border-radius: 1rem;
