@@ -1,7 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ActivitySubjectType, ActivityType } from '@prisma/client';
 import { RecordScopeService } from '../authorization/record-scope.service';
 import { PrismaService } from '../common/database/prisma.service';
@@ -102,10 +99,8 @@ export class DealsService {
     ]);
     if (!pipeline || !stage)
       throw new BadRequestException('Invalid pipeline or stage');
-    if (companyId && !company)
-      throw new BadRequestException('Invalid company');
-    if (contactId && !contact)
-      throw new BadRequestException('Invalid contact');
+    if (companyId && !company) throw new BadRequestException('Invalid company');
+    if (contactId && !contact) throw new BadRequestException('Invalid contact');
   }
 
   async find(id: string) {
