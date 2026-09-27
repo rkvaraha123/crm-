@@ -1,12 +1,5 @@
-import {
-  BadRequestException,
-  Injectable,
-} from '@nestjs/common';
-import {
-  ActivitySubjectType,
-  ActivityType,
-  TaskStatus,
-} from '@prisma/client';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { ActivitySubjectType, ActivityType, TaskStatus } from '@prisma/client';
 import { RecordScopeService } from '../authorization/record-scope.service';
 import { PrismaService } from '../common/database/prisma.service';
 import { OrganizationContextService } from '../common/tenant/organization-context.service';
@@ -54,7 +47,11 @@ export class TasksService {
       where: { organizationId_userId: { organizationId, userId } },
       select: { status: true, user: { select: { status: true } } },
     });
-    if (!member || member.status !== 'ACTIVE' || member.user.status !== 'ACTIVE')
+    if (
+      !member ||
+      member.status !== 'ACTIVE' ||
+      member.user.status !== 'ACTIVE'
+    )
       throw new BadRequestException('Task assignee must be an active member');
   }
 
