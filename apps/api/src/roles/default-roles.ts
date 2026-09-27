@@ -1,8 +1,4 @@
-import {
-  RecordResource,
-  RecordScope,
-  type Prisma,
-} from '@prisma/client';
+import { RecordResource, RecordScope, type Prisma } from '@prisma/client';
 import {
   ensurePermissions,
   PERMISSION_KEYS,
