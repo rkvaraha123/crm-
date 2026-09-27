@@ -3,7 +3,6 @@ import {
   Prisma,
   RecordResource,
   RecordScope,
-  type PrismaClient,
 } from '@prisma/client';
 import { PrismaService } from '../common/database/prisma.service';
 import { OrganizationContextService } from '../common/tenant/organization-context.service';
