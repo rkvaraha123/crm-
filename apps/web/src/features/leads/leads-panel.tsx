@@ -141,7 +141,9 @@ export function LeadsPanel({
         <div>
           <p className="crm-page-kicker">Sales</p>
           <h1>Leads</h1>
-          <p>Capture prospects, qualify them, and prepare them for the pipeline.</p>
+          <p>
+            Capture prospects, qualify them, and prepare them for the pipeline.
+          </p>
         </div>
         <input
           aria-label="Search leads"
@@ -254,11 +256,15 @@ export function LeadsPanel({
                 <tr key={lead.id}>
                   <td>
                     <strong>
-                      {[lead.firstName, lead.lastName].filter(Boolean).join(' ') ||
+                      {[lead.firstName, lead.lastName]
+                        .filter(Boolean)
+                        .join(' ') ||
                         lead.email ||
                         'Unnamed lead'}
                     </strong>
-                    <small>{lead.email || lead.phone || 'No contact detail'}</small>
+                    <small>
+                      {lead.email || lead.phone || 'No contact detail'}
+                    </small>
                   </td>
                   <td>{lead.companyName || '—'}</td>
                   <td>{lead.source || '—'}</td>
