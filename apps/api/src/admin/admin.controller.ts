@@ -7,6 +7,7 @@ import {
   ParseEnumPipe,
   ParseUUIDPipe,
   Patch,
+  Post,
   Put,
   Query,
   UseGuards,
