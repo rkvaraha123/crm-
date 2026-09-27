@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ActivitySubjectType, ActivityType } from '@prisma/client';
 import { RecordScopeService } from '../authorization/record-scope.service';
 import { PrismaService } from '../common/database/prisma.service';
 import { OrganizationContextService } from '../common/tenant/organization-context.service';
@@ -65,34 +66,75 @@ export class CompaniesRepository {
     });
   }
 
-  create(data: CreateCompanyDto) {
+  async create(data: CreateCompanyDto) {
     const context = this.context.current();
     const organizationId = this.context.requireOrganization();
-    return this.prisma.company.create({
-      data: {
-        ...data,
-        organizationId,
-        ownerId: context.userId,
-      },
-      include: { owner: { select: ownerSelect } },
+    return this.prisma.$transaction(async (tx) => {
+      const company = await tx.company.create({
+        data: {
+          ...data,
+          organizationId,
+          ownerId: context.userId,
+        },
+        include: { owner: { select: ownerSelect } },
+      });
+      await tx.activity.create({
+        data: {
+          organizationId,
+          actorUserId: context.userId,
+          subjectType: ActivitySubjectType.COMPANY,
+          subjectId: company.id,
+          type: ActivityType.COMPANY_CREATED,
+        },
+      });
+      return company;
     });
   }
 
   async update(id: string, data: UpdateCompanyDto) {
     const existing = await this.find(id);
-    return this.prisma.company.update({
-      where: { id: existing.id },
-      data,
-      include: { owner: { select: ownerSelect } },
+    const context = this.context.current();
+    const organizationId = this.context.requireOrganization();
+    return this.prisma.$transaction(async (tx) => {
+      const company = await tx.company.update({
+        where: { id: existing.id },
+        data,
+        include: { owner: { select: ownerSelect } },
+      });
+      await tx.activity.create({
+        data: {
+          organizationId,
+          actorUserId: context.userId,
+          subjectType: ActivitySubjectType.COMPANY,
+          subjectId: company.id,
+          type: ActivityType.COMPANY_UPDATED,
+          metadata: { fields: Object.keys(data) },
+        },
+      });
+      return company;
     });
   }
 
   async archive(id: string) {
     const existing = await this.find(id);
-    return this.prisma.company.update({
-      where: { id: existing.id },
-      data: { archivedAt: new Date() },
-      include: { owner: { select: ownerSelect } },
+    const context = this.context.current();
+    const organizationId = this.context.requireOrganization();
+    return this.prisma.$transaction(async (tx) => {
+      const company = await tx.company.update({
+        where: { id: existing.id },
+        data: { archivedAt: new Date() },
+        include: { owner: { select: ownerSelect } },
+      });
+      await tx.activity.create({
+        data: {
+          organizationId,
+          actorUserId: context.userId,
+          subjectType: ActivitySubjectType.COMPANY,
+          subjectId: company.id,
+          type: ActivityType.COMPANY_ARCHIVED,
+        },
+      });
+      return company;
     });
   }
 }
