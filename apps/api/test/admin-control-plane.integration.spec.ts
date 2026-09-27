@@ -171,9 +171,7 @@ describe('CRM platform admin control plane', () => {
     );
 
     await request(app.getHttpServer())
-      .patch(
-        `/api/v1/admin/organizations/${customerOrganizationId}/status`,
-      )
+      .patch(`/api/v1/admin/organizations/${customerOrganizationId}/status`)
       .set(auth('control-admin'))
       .send({ status: 'SUSPENDED' })
       .expect(200)
@@ -224,9 +222,7 @@ describe('CRM platform admin control plane', () => {
 
   it('manages tenant appearance through the platform admin API', async () => {
     const updated = await request(app.getHttpServer())
-      .put(
-        `/api/v1/admin/organizations/${customerOrganizationId}/appearance`,
-      )
+      .put(`/api/v1/admin/organizations/${customerOrganizationId}/appearance`)
       .set(auth('control-admin'))
       .send({
         workspaceName: 'Customer CRM',
