@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ActivitySubjectType, ActivityType, TaskStatus } from '@prisma/client';
 import { RecordScopeService } from '../authorization/record-scope.service';
 import { PrismaService } from '../common/database/prisma.service';
+import { ProductFeatureService } from '../common/product-feature.service';
 import { OrganizationContextService } from '../common/tenant/organization-context.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -19,9 +20,11 @@ export class TasksService {
     private readonly prisma: PrismaService,
     private readonly context: OrganizationContextService,
     private readonly scopes: RecordScopeService,
+    private readonly features: ProductFeatureService,
   ) {}
 
   async list() {
+    await this.features.require('tasksEnabled');
     const organizationId = this.context.requireOrganization();
     const access = await this.scopes.taskWhere();
     return this.prisma.task.findMany({
@@ -98,6 +101,7 @@ export class TasksService {
   }
 
   async find(id: string) {
+    await this.features.require('tasksEnabled');
     const access = await this.scopes.taskWhere();
     return this.prisma.task.findFirstOrThrow({
       where: {
@@ -110,6 +114,7 @@ export class TasksService {
   }
 
   async create(data: CreateTaskDto) {
+    await this.features.require('tasksEnabled');
     const current = this.context.current();
     const organizationId = this.context.requireOrganization();
     const assigneeId = data.assigneeId ?? current.userId;
