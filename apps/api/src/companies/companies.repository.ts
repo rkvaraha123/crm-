@@ -34,7 +34,9 @@ export class CompaniesRepository {
               OR: [
                 { name: { contains: search, mode: 'insensitive' as const } },
                 { domain: { contains: search, mode: 'insensitive' as const } },
-                { industry: { contains: search, mode: 'insensitive' as const } },
+                {
+                  industry: { contains: search, mode: 'insensitive' as const },
+                },
               ],
             }
           : {}),
