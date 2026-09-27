@@ -9,7 +9,6 @@ import {
   IsUUID,
   Length,
   Matches,
-  MaxLength,
   Min,
 } from 'class-validator';
 
