@@ -109,7 +109,9 @@ export function AdminPortal() {
   }
 
   if (adminMe.isPending)
-    return <main className="admin-auth-screen">Verifying platform access…</main>;
+    return (
+      <main className="admin-auth-screen">Verifying platform access…</main>
+    );
 
   if (adminMe.isError)
     return (
@@ -181,12 +183,12 @@ export function AdminPortal() {
               element={<AdminOrganizations api={api} />}
             />
             <Route path="users" element={<AdminUsers api={api} />} />
-            <Route
-              path="appearance"
-              element={<AdminAppearance api={api} />}
-            />
+            <Route path="appearance" element={<AdminAppearance api={api} />} />
             <Route path="system" element={<AdminSystem api={api} />} />
-            <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+            <Route
+              path="*"
+              element={<Navigate to="/admin/dashboard" replace />}
+            />
           </Routes>
         </div>
       </main>
@@ -197,7 +199,8 @@ export function AdminPortal() {
 function AdminDashboard({ api }: { api: ApiClient }) {
   const overview = useQuery({
     queryKey: ['admin', 'overview'],
-    queryFn: ({ signal }) => api<Overview>('/admin/overview', undefined, signal),
+    queryFn: ({ signal }) =>
+      api<Overview>('/admin/overview', undefined, signal),
   });
 
   if (overview.isPending) return <p role="status">Loading admin dashboard…</p>;
@@ -264,10 +267,15 @@ function AdminOrganizations({ api }: { api: ApiClient }) {
       id: string;
       status: OrganizationRow['status'];
     }) =>
-      api<OrganizationRow>(`/admin/organizations/${id}/status`, undefined, undefined, {
-        method: 'PATCH',
-        body: JSON.stringify({ status }),
-      }),
+      api<OrganizationRow>(
+        `/admin/organizations/${id}/status`,
+        undefined,
+        undefined,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ status }),
+        },
+      ),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ['admin', 'organizations'] }),
   });
@@ -315,7 +323,8 @@ function AdminOrganizations({ api }: { api: ApiClient }) {
                       onChange={(event) =>
                         updateStatus.mutate({
                           id: organization.id,
-                          status: event.target.value as OrganizationRow['status'],
+                          status: event.target
+                            .value as OrganizationRow['status'],
                         })
                       }
                     >
@@ -357,18 +366,13 @@ function AdminUsers({ api }: { api: ApiClient }) {
   });
 
   const updateStatus = useMutation({
-    mutationFn: ({
-      id,
-      status,
-    }: {
-      id: string;
-      status: UserRow['status'];
-    }) =>
+    mutationFn: ({ id, status }: { id: string; status: UserRow['status'] }) =>
       api<UserRow>(`/admin/users/${id}/status`, undefined, undefined, {
         method: 'PATCH',
         body: JSON.stringify({ status }),
       }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'users'] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] }),
   });
 
   return (
@@ -449,7 +453,11 @@ function AdminAppearance({ api }: { api: ApiClient }) {
   const organizations = useQuery({
     queryKey: ['admin', 'organizations', 'appearance-picker'],
     queryFn: ({ signal }) =>
-      api<OrganizationRow[]>('/admin/organizations?limit=200', undefined, signal),
+      api<OrganizationRow[]>(
+        '/admin/organizations?limit=200',
+        undefined,
+        signal,
+      ),
   });
   const [organizationId, setOrganizationId] = useState('');
   const [draft, setDraft] = useState<OrganizationAppearance>({
@@ -629,7 +637,9 @@ function AdminSystem({ api }: { api: ApiClient }) {
         <div className="admin-health-row">
           <span
             className={
-              overview.isError ? 'admin-health-dot is-error' : 'admin-health-dot'
+              overview.isError
+                ? 'admin-health-dot is-error'
+                : 'admin-health-dot'
             }
           />
           <div>
