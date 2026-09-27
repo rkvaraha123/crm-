@@ -111,9 +111,9 @@ export class AdminService {
     });
   }
 
-  listUsers(query: ListAdminUsersDto) {
+  async listUsers(query: ListAdminUsersDto) {
     const search = query.search;
-    return this.prisma.user.findMany({
+    const users = await this.prisma.user.findMany({
       where: {
         ...(query.status ? { status: query.status } : {}),
         ...(search
@@ -152,18 +152,31 @@ export class AdminService {
             organization: { select: { id: true, name: true } },
           },
         },
-        userRoles: {
-          where: {
-            role: {
-              organizationId: null,
-              name: 'SUPER_ADMIN',
-              isSystem: true,
-            },
-          },
-          select: { id: true },
-        },
       },
     });
+
+    const platformAssignments =
+      users.length === 0
+        ? []
+        : await this.prisma.userRole.findMany({
+            where: {
+              userId: { in: users.map(({ id }) => id) },
+              role: {
+                organizationId: null,
+                name: 'SUPER_ADMIN',
+                isSystem: true,
+              },
+            },
+            select: { userId: true },
+          });
+    const platformAdmins = new Set(
+      platformAssignments.map(({ userId }) => userId),
+    );
+
+    return users.map((user) => ({
+      ...user,
+      platformAdmin: platformAdmins.has(user.id),
+    }));
   }
 
   private async assertOrganizationNotAdminAnchor(organizationId: string) {
