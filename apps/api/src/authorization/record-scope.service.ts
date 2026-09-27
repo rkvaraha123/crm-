@@ -1,9 +1,5 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import {
-  Prisma,
-  RecordResource,
-  RecordScope,
-} from '@prisma/client';
+import { Prisma, RecordResource, RecordScope } from '@prisma/client';
 import { PrismaService } from '../common/database/prisma.service';
 import { OrganizationContextService } from '../common/tenant/organization-context.service';
 
