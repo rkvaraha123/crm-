@@ -87,7 +87,6 @@ export class AdminController {
     return this.service.resetAppearance(organizationId);
   }
 
-
   @Get('organizations/:organizationId/modules')
   modules(@Param('organizationId', ParseUUIDPipe) organizationId: string) {
     return this.configuration.listModules(organizationId);
@@ -158,11 +157,7 @@ export class AdminController {
     @Param('pipelineId', ParseUUIDPipe) pipelineId: string,
     @Body() data: UpdatePipelineDto,
   ) {
-    return this.configuration.updatePipeline(
-      organizationId,
-      pipelineId,
-      data,
-    );
+    return this.configuration.updatePipeline(organizationId, pipelineId, data);
   }
 
   @Post('organizations/:organizationId/pipelines/:pipelineId/stages')
@@ -174,9 +169,7 @@ export class AdminController {
     return this.configuration.createStage(organizationId, pipelineId, data);
   }
 
-  @Patch(
-    'organizations/:organizationId/pipelines/:pipelineId/stages/:stageId',
-  )
+  @Patch('organizations/:organizationId/pipelines/:pipelineId/stages/:stageId')
   updatePipelineStage(
     @Param('organizationId', ParseUUIDPipe) organizationId: string,
     @Param('pipelineId', ParseUUIDPipe) pipelineId: string,
@@ -191,19 +184,13 @@ export class AdminController {
     );
   }
 
-  @Delete(
-    'organizations/:organizationId/pipelines/:pipelineId/stages/:stageId',
-  )
+  @Delete('organizations/:organizationId/pipelines/:pipelineId/stages/:stageId')
   disablePipelineStage(
     @Param('organizationId', ParseUUIDPipe) organizationId: string,
     @Param('pipelineId', ParseUUIDPipe) pipelineId: string,
     @Param('stageId', ParseUUIDPipe) stageId: string,
   ) {
-    return this.configuration.disableStage(
-      organizationId,
-      pipelineId,
-      stageId,
-    );
+    return this.configuration.disableStage(organizationId, pipelineId, stageId);
   }
 
   @Get('users')
