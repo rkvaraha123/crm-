@@ -12,6 +12,9 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { PermissionGuard } from '../authorization/permission.guard';
+import { CrmModuleGuard } from '../configuration/crm-module.guard';
+import { RequireCrmModule } from '../configuration/require-crm-module.decorator';
+import { CrmModuleKey } from '@prisma/client';
 import { RequirePermissions } from '../authorization/require-permissions.decorator';
 import { OrganizationContextInterceptor } from '../common/tenant/organization-context.interceptor';
 import { Access } from '../common/tenant/tenant-access.decorator';
@@ -22,7 +25,8 @@ import { ListContactsDto } from './dto/list-contacts.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
 
 @Controller('organizations/:organizationId/contacts')
-@UseGuards(TenantAccessGuard, PermissionGuard)
+@RequireCrmModule(CrmModuleKey.CONTACTS)
+@UseGuards(TenantAccessGuard, CrmModuleGuard, PermissionGuard)
 @UseInterceptors(OrganizationContextInterceptor)
 export class ContactsController {
   constructor(private readonly service: ContactsService) {}
