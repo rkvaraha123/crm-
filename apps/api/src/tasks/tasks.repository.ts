@@ -181,7 +181,7 @@ export class TasksRepository {
           );
     const completedAt =
       data.status === TaskStatus.COMPLETED
-        ? existing.completedAt ?? new Date()
+        ? (existing.completedAt ?? new Date())
         : data.status && data.status !== TaskStatus.COMPLETED
           ? null
           : undefined;
