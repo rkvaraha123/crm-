@@ -1,14 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import type { ApiClient } from '../api-client';
 
-export type CustomFieldEntity = 'COMPANY' | 'CONTACT' | 'LEAD' | 'DEAL' | 'TASK';
+export type CustomFieldEntity =
+  'COMPANY' | 'CONTACT' | 'LEAD' | 'DEAL' | 'TASK';
 export type CustomFieldType =
-  | 'TEXT'
-  | 'LONG_TEXT'
-  | 'NUMBER'
-  | 'DATE'
-  | 'BOOLEAN'
-  | 'SELECT';
+  'TEXT' | 'LONG_TEXT' | 'NUMBER' | 'DATE' | 'BOOLEAN' | 'SELECT';
 
 export interface CustomFieldDefinition {
   id: string;
