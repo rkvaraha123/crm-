@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client';
+
 export const PERMISSION_KEYS = [
   'organizations.read',
   'organizations.update',
@@ -18,6 +19,10 @@ export const PERMISSION_KEYS = [
   'companies.create',
   'companies.update',
   'companies.delete',
+  'activities.read',
+  'notes.create',
+  'notes.update',
+  'notes.delete',
   'leads.read',
   'leads.create',
   'leads.update',
@@ -38,7 +43,9 @@ export const PERMISSION_KEYS = [
   'settings.update',
   'audit_logs.read',
 ] as const;
+
 export type PermissionKey = (typeof PERMISSION_KEYS)[number];
+
 export async function ensurePermissions(tx: Prisma.TransactionClient) {
   await tx.permission.createMany({
     data: PERMISSION_KEYS.map((key) => ({
