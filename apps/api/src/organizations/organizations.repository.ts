@@ -6,6 +6,7 @@ import { PageDto } from '../common/dto/page.dto';
 import { createDefaultRoles } from '../roles/default-roles';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { CreateMemberDto } from './dto/create-member.dto';
+import { UpdateOrganizationAppearanceDto } from './dto/update-organization-appearance.dto';
 @Injectable()
 export class OrganizationsRepository {
   constructor(
@@ -39,6 +40,41 @@ export class OrganizationsRepository {
       },
     });
   }
+  getAppearance() {
+    const organizationId = this.context.requireOrganization();
+    return this.prisma.organizationAppearance
+      .findUnique({ where: { organizationId } })
+      .then(
+        (appearance) =>
+          appearance ?? {
+            organizationId,
+            workspaceName: 'RK Varaha CRM',
+            primaryColor: '#0f766e',
+            accentColor: '#14b8a6',
+            sidebarColor: '#0f172a',
+            pageBackground: '#f5f7fb',
+            surfaceColor: '#ffffff',
+          },
+      );
+  }
+
+  updateAppearance(data: UpdateOrganizationAppearanceDto) {
+    const organizationId = this.context.requireOrganization();
+    return this.prisma.organizationAppearance.upsert({
+      where: { organizationId },
+      create: { organizationId, ...data },
+      update: data,
+    });
+  }
+
+  async resetAppearance() {
+    const organizationId = this.context.requireOrganization();
+    await this.prisma.organizationAppearance.deleteMany({
+      where: { organizationId },
+    });
+    return this.getAppearance();
+  }
+
   listMembers(page: PageDto) {
     return this.prisma.organizationMember.findMany({
       where: { organizationId: this.context.requireOrganization() },
