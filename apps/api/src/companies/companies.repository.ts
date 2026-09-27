@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { RecordScopeService } from '../authorization/record-scope.service';
 import { PrismaService } from '../common/database/prisma.service';
 import { OrganizationContextService } from '../common/tenant/organization-context.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
@@ -17,14 +18,17 @@ export class CompaniesRepository {
   constructor(
     private readonly prisma: PrismaService,
     private readonly context: OrganizationContextService,
+    private readonly recordScope: RecordScopeService,
   ) {}
 
-  list(query: ListCompaniesDto) {
+  async list(query: ListCompaniesDto) {
     const organizationId = this.context.requireOrganization();
+    const access = await this.recordScope.companyWhere();
     const search = query.search;
     return this.prisma.company.findMany({
       where: {
         organizationId,
+        ...access,
         archivedAt: null,
         ...(query.lifecycleStatus
           ? { lifecycleStatus: query.lifecycleStatus }
@@ -48,11 +52,13 @@ export class CompaniesRepository {
     });
   }
 
-  find(id: string) {
+  async find(id: string) {
+    const access = await this.recordScope.companyWhere();
     return this.prisma.company.findFirstOrThrow({
       where: {
         id,
         organizationId: this.context.requireOrganization(),
+        ...access,
         archivedAt: null,
       },
       include: { owner: { select: ownerSelect } },
