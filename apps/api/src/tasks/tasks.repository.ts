@@ -182,9 +182,9 @@ export class TasksRepository {
     const completedAt =
       data.status === TaskStatus.COMPLETED
         ? (existing.completedAt ?? new Date())
-        : data.status && data.status !== TaskStatus.COMPLETED
-          ? null
-          : undefined;
+        : data.status === undefined
+          ? undefined
+          : null;
 
     return this.prisma.$transaction(async (tx) => {
       const task = await tx.task.update({
