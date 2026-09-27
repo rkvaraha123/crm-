@@ -89,7 +89,10 @@ export function ReportsPanel({
 
       <div className="crm-metric-grid">
         {metrics.map(([label, value]) => (
-          <article className="crm-metric-card crm-metric-card-static" key={label}>
+          <article
+            className="crm-metric-card crm-metric-card-static"
+            key={label}
+          >
             <span>{label}</span>
             <strong>{value}</strong>
           </article>
