@@ -113,7 +113,7 @@ describe('authentication and organization UI', () => {
     expect(screen.queryByText('Test User')).toBeNull();
   });
   it('renders the authenticated account', async () => {
-    mockApi();
+    mockApi([organizations[0]]);
     await setup();
     expect(await screen.findByText('Test User')).toBeDefined();
     expect(
