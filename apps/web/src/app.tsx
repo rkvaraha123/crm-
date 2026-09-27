@@ -190,6 +190,7 @@ export function Workspace() {
           <h1>Select an organization</h1>
           <p>Choose the CRM workspace you want to open.</p>
           <select
+            aria-label="Organization"
             className="crm-large-select"
             value=""
             onChange={(event) => void changeOrganization(event.target.value)}
