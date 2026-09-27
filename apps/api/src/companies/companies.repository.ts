@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { ActivitySubjectType, ActivityType } from '@prisma/client';
+import { ActivitySubjectType, ActivityType, CustomFieldEntity } from '@prisma/client';
 import { RecordScopeService } from '../authorization/record-scope.service';
 import { PrismaService } from '../common/database/prisma.service';
 import { OrganizationContextService } from '../common/tenant/organization-context.service';
+import { CrmConfigurationService } from '../configuration/crm-configuration.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { ListCompaniesDto } from './dto/list-companies.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
@@ -20,6 +21,7 @@ export class CompaniesRepository {
     private readonly prisma: PrismaService,
     private readonly context: OrganizationContextService,
     private readonly recordScope: RecordScopeService,
+    private readonly configuration: CrmConfigurationService,
   ) {}
 
   async list(query: ListCompaniesDto) {
@@ -69,10 +71,20 @@ export class CompaniesRepository {
   async create(data: CreateCompanyDto) {
     const context = this.context.current();
     const organizationId = this.context.requireOrganization();
+    const customFields = await this.configuration.validateCustomValues(
+      CustomFieldEntity.COMPANY,
+      data.customFields,
+    );
     return this.prisma.$transaction(async (tx) => {
       const company = await tx.company.create({
         data: {
-          ...data,
+          name: data.name,
+          domain: data.domain,
+          phone: data.phone,
+          website: data.website,
+          industry: data.industry,
+          lifecycleStatus: data.lifecycleStatus,
+          customFields,
           organizationId,
           ownerId: context.userId,
         },
@@ -95,10 +107,25 @@ export class CompaniesRepository {
     const existing = await this.find(id);
     const context = this.context.current();
     const organizationId = this.context.requireOrganization();
+    const customFields =
+      data.customFields === undefined
+        ? undefined
+        : await this.configuration.validateCustomValues(
+            CustomFieldEntity.COMPANY,
+            data.customFields,
+          );
     return this.prisma.$transaction(async (tx) => {
       const company = await tx.company.update({
         where: { id: existing.id },
-        data,
+        data: {
+          name: data.name,
+          domain: data.domain,
+          phone: data.phone,
+          website: data.website,
+          industry: data.industry,
+          lifecycleStatus: data.lifecycleStatus,
+          ...(customFields === undefined ? {} : { customFields }),
+        },
         include: { owner: { select: ownerSelect } },
       });
       await tx.activity.create({
