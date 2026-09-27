@@ -6,7 +6,8 @@ export type AuthorizationAuditAction =
   | 'ROLE_CREATED'
   | 'ROLE_UPDATED'
   | 'ROLE_DELETED'
-  | 'ROLE_PERMISSIONS_CHANGED';
+  | 'ROLE_PERMISSIONS_CHANGED'
+  | 'ROLE_RECORD_SCOPES_CHANGED';
 
 @Injectable()
 export class AuthorizationAuditService {
