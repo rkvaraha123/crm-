@@ -9,13 +9,7 @@ interface OrganizationOption {
 }
 
 type ModuleKey =
-  | 'COMPANIES'
-  | 'CONTACTS'
-  | 'LEADS'
-  | 'DEALS'
-  | 'TASKS'
-  | 'REPORTS'
-  | 'TEAM';
+  'COMPANIES' | 'CONTACTS' | 'LEADS' | 'DEALS' | 'TASKS' | 'REPORTS' | 'TEAM';
 
 interface ModuleRow {
   id?: string | null;
@@ -29,12 +23,7 @@ interface ModuleRow {
 
 type CustomEntity = 'COMPANY' | 'CONTACT' | 'LEAD' | 'DEAL' | 'TASK';
 type CustomFieldType =
-  | 'TEXT'
-  | 'LONG_TEXT'
-  | 'NUMBER'
-  | 'DATE'
-  | 'BOOLEAN'
-  | 'SELECT';
+  'TEXT' | 'LONG_TEXT' | 'NUMBER' | 'DATE' | 'BOOLEAN' | 'SELECT';
 
 interface CustomField {
   id: string;
@@ -64,13 +53,7 @@ interface Pipeline {
   stages: PipelineStage[];
 }
 
-const entities: CustomEntity[] = [
-  'COMPANY',
-  'CONTACT',
-  'LEAD',
-  'DEAL',
-  'TASK',
-];
+const entities: CustomEntity[] = ['COMPANY', 'CONTACT', 'LEAD', 'DEAL', 'TASK'];
 
 const fieldTypes: CustomFieldType[] = [
   'TEXT',
@@ -116,7 +99,9 @@ export function CrmBuilderPage({ api }: { api: ApiClient }) {
       data,
     }: {
       key: ModuleKey;
-      data: Partial<Pick<ModuleRow, 'enabled' | 'label' | 'description' | 'navOrder'>>;
+      data: Partial<
+        Pick<ModuleRow, 'enabled' | 'label' | 'description' | 'navOrder'>
+      >;
     }) =>
       api<ModuleRow>(
         `/admin/organizations/${organizationId}/modules/${key}`,
@@ -174,9 +159,7 @@ export function CrmBuilderPage({ api }: { api: ApiClient }) {
               <div>
                 <p className="admin-eyebrow">MODULES</p>
                 <h2>Workspace services</h2>
-                <p>
-                  Enable, disable, rename, and reorder the CRM navigation.
-                </p>
+                <p>Enable, disable, rename, and reorder the CRM navigation.</p>
               </div>
             </div>
             {modules.isPending ? (
@@ -199,10 +182,7 @@ export function CrmBuilderPage({ api }: { api: ApiClient }) {
             )}
           </section>
 
-          <CustomFieldsBuilder
-            api={api}
-            organizationId={organizationId}
-          />
+          <CustomFieldsBuilder api={api} organizationId={organizationId} />
 
           <PipelineBuilder api={api} organizationId={organizationId} />
         </>
@@ -379,11 +359,7 @@ function CustomFieldsBuilder({
       data: Partial<
         Pick<
           CustomField,
-          | 'label'
-          | 'fieldType'
-          | 'required'
-          | 'active'
-          | 'displayOrder'
+          'label' | 'fieldType' | 'required' | 'active' | 'displayOrder'
         >
       > & { options?: string[] };
     }) =>
