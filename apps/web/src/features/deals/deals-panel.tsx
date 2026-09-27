@@ -145,7 +145,7 @@ export function DealsPanel({
             name,
             pipelineId,
             stageId,
-            amount: amount ? Number(amount) : 0,
+            amount: amount || '0',
             currency,
             ...(companyId ? { companyId } : {}),
             ...(contactId ? { contactId } : {}),
