@@ -25,7 +25,8 @@ function Home() {
       <p className="eyebrow">RK VARAHA / WORKSPACE</p>
       <h1>Your workspace starts here.</h1>
       <p className="intro">
-        Sign in to access your organizations, companies, contacts, and CRM administration.
+        Sign in to access your organizations, companies, contacts, and CRM
+        administration.
       </p>
       <p role="status" className="my-6 text-slate-600">
         {health.isPending
@@ -187,14 +188,8 @@ export function Workspace() {
                       Your organization workspace is ready.
                     </p>
                   </div>
-                  <CompaniesPanel
-                    api={api}
-                    organizationId={organizationId}
-                  />
-                  <ContactsPanel
-                    api={api}
-                    organizationId={organizationId}
-                  />
+                  <CompaniesPanel api={api} organizationId={organizationId} />
+                  <ContactsPanel api={api} organizationId={organizationId} />
                   <AuthorizationAdmin
                     api={api}
                     organizationId={organizationId}
