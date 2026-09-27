@@ -8,6 +8,10 @@ import {
   DEFAULT_APPEARANCE,
   type OrganizationAppearance,
 } from '../workspace/appearance';
+import {
+  DEFAULT_PRODUCT_CONFIG,
+  type ProductConfig,
+} from '../workspace/product-config';
 
 interface AdminUser {
   id: string;
@@ -147,6 +151,7 @@ export function AdminPortal() {
           <NavLink to="/admin/dashboard">Dashboard</NavLink>
           <NavLink to="/admin/organizations">Organizations</NavLink>
           <NavLink to="/admin/users">Users</NavLink>
+          <NavLink to="/admin/products">Product Configuration</NavLink>
           <NavLink to="/admin/appearance">Appearance</NavLink>
           <NavLink to="/admin/system">System Health</NavLink>
         </nav>
@@ -444,6 +449,191 @@ function AdminUsers({ api }: { api: ApiClient }) {
           </table>
         </div>
       )}
+    </section>
+  );
+}
+
+
+function AdminProducts({ api }: { api: ApiClient }) {
+  const queryClient = useQueryClient();
+  const organizations = useQuery({
+    queryKey: ['admin', 'organizations', 'product-picker'],
+    queryFn: ({ signal }) =>
+      api<OrganizationRow[]>(
+        '/admin/organizations?limit=200',
+        undefined,
+        signal,
+      ),
+  });
+  const [organizationId, setOrganizationId] = useState('');
+  const [draft, setDraft] = useState<ProductConfig>({
+    ...DEFAULT_PRODUCT_CONFIG,
+    organizationId: '',
+  });
+
+  useEffect(() => {
+    if (!organizationId && organizations.data?.length)
+      setOrganizationId(organizations.data[0].id);
+  }, [organizationId, organizations.data]);
+
+  const config = useQuery({
+    queryKey: ['admin', 'product-config', organizationId],
+    queryFn: ({ signal }) =>
+      api<ProductConfig>(
+        `/admin/organizations/${organizationId}/product-config`,
+        undefined,
+        signal,
+      ),
+    enabled: !!organizationId,
+  });
+
+  useEffect(() => {
+    if (config.data) setDraft(config.data);
+  }, [config.data]);
+
+  const save = useMutation({
+    mutationFn: () =>
+      api<ProductConfig>(
+        `/admin/organizations/${organizationId}/product-config`,
+        undefined,
+        undefined,
+        {
+          method: 'PUT',
+          body: JSON.stringify({
+            companiesEnabled: draft.companiesEnabled,
+            contactsEnabled: draft.contactsEnabled,
+            leadsEnabled: draft.leadsEnabled,
+            dealsEnabled: draft.dealsEnabled,
+            tasksEnabled: draft.tasksEnabled,
+            activitiesEnabled: draft.activitiesEnabled,
+            dashboardLabel: draft.dashboardLabel,
+            companiesLabel: draft.companiesLabel,
+            contactsLabel: draft.contactsLabel,
+            leadsLabel: draft.leadsLabel,
+            dealsLabel: draft.dealsLabel,
+            tasksLabel: draft.tasksLabel,
+          }),
+        },
+      ),
+    onSuccess: (saved) => {
+      setDraft(saved);
+      queryClient.setQueryData(
+        ['admin', 'product-config', organizationId],
+        saved,
+      );
+      queryClient.invalidateQueries({
+        queryKey: ['tenant', organizationId, 'product-config'],
+      });
+    },
+  });
+
+  const modules = [
+    ['companiesEnabled', 'Companies'],
+    ['contactsEnabled', 'Contacts'],
+    ['leadsEnabled', 'Leads'],
+    ['dealsEnabled', 'Deals & Pipeline'],
+    ['tasksEnabled', 'Tasks'],
+    ['activitiesEnabled', 'Activities'],
+  ] as const;
+
+  const labels = [
+    ['dashboardLabel', 'Dashboard label'],
+    ['companiesLabel', 'Companies label'],
+    ['contactsLabel', 'Contacts label'],
+    ['leadsLabel', 'Leads label'],
+    ['dealsLabel', 'Deals label'],
+    ['tasksLabel', 'Tasks label'],
+  ] as const;
+
+  return (
+    <section>
+      <AdminHeading
+        kicker="Product"
+        title="Product Configuration"
+        description="Turn CRM modules on or off and rename the workspace navigation without changing code."
+      />
+      <div className="admin-panel admin-appearance-panel">
+        <label>
+          Organization
+          <select
+            value={organizationId}
+            onChange={(event) => setOrganizationId(event.target.value)}
+          >
+            {organizations.data?.map((organization) => (
+              <option key={organization.id} value={organization.id}>
+                {organization.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {config.isPending ? (
+          <p role="status">Loading product configuration…</p>
+        ) : config.isError ? (
+          <p role="alert">Product configuration unavailable.</p>
+        ) : (
+          <>
+            <div className="admin-product-grid">
+              {modules.map(([key, label]) => (
+                <label className="admin-toggle-card" key={key}>
+                  <span>
+                    <strong>{label}</strong>
+                    <small>
+                      {draft[key] ? 'Enabled for this organization' : 'Hidden'}
+                    </small>
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={draft[key]}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        [key]: event.target.checked,
+                      }))
+                    }
+                  />
+                </label>
+              ))}
+            </div>
+
+            <div className="admin-label-grid">
+              {labels.map(([key, label]) => (
+                <label key={key}>
+                  {label}
+                  <input
+                    maxLength={40}
+                    value={draft[key]}
+                    onChange={(event) =>
+                      setDraft((current) => ({
+                        ...current,
+                        [key]: event.target.value,
+                      }))
+                    }
+                  />
+                </label>
+              ))}
+            </div>
+
+            <div className="admin-form-actions">
+              <button
+                disabled={save.isPending}
+                onClick={() => save.mutate()}
+                type="button"
+              >
+                {save.isPending ? 'Saving…' : 'Save product configuration'}
+              </button>
+            </div>
+            {save.isSuccess && (
+              <p className="admin-success">Product configuration saved.</p>
+            )}
+            {save.isError && (
+              <p className="admin-error" role="alert">
+                Product configuration could not be saved.
+              </p>
+            )}
+          </>
+        )}
+      </div>
     </section>
   );
 }
