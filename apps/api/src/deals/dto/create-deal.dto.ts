@@ -1,15 +1,12 @@
 import { Transform } from 'class-transformer';
 import {
   IsDateString,
-  IsNumber,
   IsObject,
   IsOptional,
   IsString,
   IsUUID,
   Length,
   Matches,
-  Max,
-  Min,
 } from 'class-validator';
 
 export class CreateDealDto {
@@ -27,10 +24,11 @@ export class CreateDealDto {
   stageId!: string;
 
   @IsOptional()
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  @Max(9999999999999999)
-  amount?: number;
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : String(value),
+  )
+  @Matches(/^\d{1,16}(?:\.\d{1,2})?$/)
+  amount?: string;
 
   @IsOptional()
   @Transform(({ value }: { value: unknown }) =>
