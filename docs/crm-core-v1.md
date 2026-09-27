@@ -5,6 +5,7 @@ This milestone turns the existing identity/tenant/RBAC platform into the first u
 ## Included
 
 ### Companies
+
 - tenant-scoped create, list, search, read, update and archive
 - lifecycle state: PROSPECT, CUSTOMER, PARTNER, OTHER
 - owner recorded from the verified authenticated CRM user
@@ -12,6 +13,7 @@ This milestone turns the existing identity/tenant/RBAC platform into the first u
 - existing `companies.*` RBAC permissions protect every endpoint
 
 ### Contacts
+
 - tenant-scoped create, list, search, read, update and archive
 - optional same-tenant company association
 - lifecycle state: LEAD, PROSPECT, CUSTOMER, OTHER
@@ -19,6 +21,7 @@ This milestone turns the existing identity/tenant/RBAC platform into the first u
 - existing `contacts.*` RBAC permissions protect every endpoint
 
 ### Team membership
+
 - add active organization members to teams
 - list team members
 - remove team members
@@ -26,6 +29,7 @@ This milestone turns the existing identity/tenant/RBAC platform into the first u
 
 ### Database integrity
 PostgreSQL triggers enforce:
+
 - team membership cannot cross organization boundaries
 - company owners must be active members of the owning organization
 - contact owners must be active members of the owning organization
@@ -33,6 +37,7 @@ PostgreSQL triggers enforce:
 
 ### Frontend
 The React workspace now exposes:
+
 - company creation, search, list and archive
 - contact creation, search, list and archive
 - company selection while creating a contact
@@ -40,6 +45,7 @@ The React workspace now exposes:
 
 ### Verification
 `apps/api/test/crm-core.integration.spec.ts` covers:
+
 - cross-tenant company isolation
 - contact/company tenant consistency
 - read-only role enforcement
