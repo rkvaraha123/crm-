@@ -209,9 +209,8 @@ export class CrmConfigurationService {
       if (value === undefined || value === null || value === '') continue;
 
       if (
-        [CustomFieldType.TEXT, CustomFieldType.LONG_TEXT].includes(
-          field.fieldType,
-        ) &&
+        (field.fieldType === CustomFieldType.TEXT ||
+          field.fieldType === CustomFieldType.LONG_TEXT) &&
         typeof value !== 'string'
       )
         throw new BadRequestException(`Invalid value for ${field.label}`);
