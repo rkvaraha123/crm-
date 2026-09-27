@@ -50,6 +50,9 @@ enum ContactLifecycleStatus {
 enum RecordResource {
   COMPANIES
   CONTACTS
+  LEADS
+  DEALS
+  TASKS
 }
 
 enum RecordScope {
@@ -61,6 +64,9 @@ enum RecordScope {
 enum ActivitySubjectType {
   COMPANY
   CONTACT
+  LEAD
+  DEAL
+  TASK
 }
 
 enum ActivityType {
@@ -71,6 +77,45 @@ enum ActivityType {
   CONTACT_CREATED
   CONTACT_UPDATED
   CONTACT_ARCHIVED
+  LEAD_CREATED
+  LEAD_UPDATED
+  LEAD_ARCHIVED
+  DEAL_CREATED
+  DEAL_UPDATED
+  DEAL_STAGE_CHANGED
+  DEAL_ARCHIVED
+  TASK_CREATED
+  TASK_UPDATED
+  TASK_COMPLETED
+  TASK_ARCHIVED
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  UNQUALIFIED
+  CONVERTED
+}
+
+enum DealStatus {
+  OPEN
+  WON
+  LOST
+}
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
 }
 
 model Organization {
@@ -88,7 +133,12 @@ model Organization {
   companies   Company[]
   contacts    Contact[]
   activities  Activity[]
-  appearance  OrganizationAppearance?
+  appearance    OrganizationAppearance?
+  productConfig OrganizationProductConfig?
+  leads         Lead[]
+  pipelines     Pipeline[]
+  deals         Deal[]
+  tasks         Task[]
 
   @@index([status])
 }
@@ -107,6 +157,10 @@ model User {
   ownedCompanies     Company[]
   ownedContacts      Contact[]
   activities         Activity[] @relation("ActivityActor")
+  ownedLeads         Lead[]
+  ownedDeals         Deal[]
+  assignedTasks      Task[] @relation("TaskAssignee")
+  createdTasks       Task[] @relation("TaskCreator")
 
   @@index([status])
 }
@@ -238,6 +292,8 @@ model Company {
   organization    Organization           @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   owner           User                   @relation(fields: [ownerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   contacts        Contact[]
+  deals           Deal[]
+  tasks           Task[]
 
   @@index([organizationId, archivedAt, name])
   @@index([organizationId, ownerId])
@@ -261,6 +317,8 @@ model Contact {
   organization    Organization           @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   owner           User                   @relation(fields: [ownerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   company         Company?               @relation(fields: [companyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  deals           Deal[]
+  tasks           Task[]
 
   @@index([organizationId, archivedAt, lastName, firstName])
   @@index([organizationId, ownerId])
@@ -300,4 +358,140 @@ model OrganizationAppearance {
   createdAt        DateTime     @default(now()) @db.Timestamptz(3)
   updatedAt        DateTime     @updatedAt @db.Timestamptz(3)
   organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+}
+
+
+model OrganizationProductConfig {
+  id                 String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId     String       @unique @db.Uuid
+  companiesEnabled   Boolean      @default(true)
+  contactsEnabled    Boolean      @default(true)
+  leadsEnabled       Boolean      @default(true)
+  dealsEnabled       Boolean      @default(true)
+  tasksEnabled       Boolean      @default(true)
+  activitiesEnabled  Boolean      @default(true)
+  dashboardLabel     String       @default("Dashboard") @db.VarChar(40)
+  companiesLabel     String       @default("Companies") @db.VarChar(40)
+  contactsLabel      String       @default("Contacts") @db.VarChar(40)
+  leadsLabel         String       @default("Leads") @db.VarChar(40)
+  dealsLabel         String       @default("Deals") @db.VarChar(40)
+  tasksLabel         String       @default("Tasks") @db.VarChar(40)
+  createdAt          DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime     @updatedAt @db.Timestamptz(3)
+  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+}
+
+model Lead {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String       @db.Uuid
+  ownerId        String       @db.Uuid
+  firstName      String       @db.VarChar(80)
+  lastName       String       @db.VarChar(80)
+  email          String?      @db.VarChar(254)
+  phone          String?      @db.VarChar(40)
+  companyName    String?      @db.VarChar(180)
+  source         String?      @db.VarChar(120)
+  status         LeadStatus   @default(NEW)
+  notes          String?      @db.VarChar(5000)
+  archivedAt     DateTime?    @db.Timestamptz(3)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  owner          User         @relation(fields: [ownerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  tasks          Task[]
+
+  @@index([organizationId, archivedAt, status])
+  @@index([organizationId, ownerId])
+  @@index([organizationId, email])
+}
+
+model Pipeline {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String          @db.Uuid
+  name           String          @db.VarChar(120)
+  isDefault      Boolean         @default(false)
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime        @updatedAt @db.Timestamptz(3)
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  stages         PipelineStage[]
+  deals          Deal[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId, isActive])
+}
+
+model PipelineStage {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  pipelineId  String   @db.Uuid
+  name        String   @db.VarChar(120)
+  position    Int
+  probability Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
+  pipeline    Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  deals       Deal[]
+
+  @@unique([pipelineId, position])
+  @@unique([pipelineId, name])
+}
+
+model Deal {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String       @db.Uuid
+  ownerId        String       @db.Uuid
+  pipelineId     String       @db.Uuid
+  stageId        String       @db.Uuid
+  companyId      String?      @db.Uuid
+  contactId      String?      @db.Uuid
+  name           String       @db.VarChar(180)
+  amount         Decimal?     @db.Decimal(14, 2)
+  currency       String       @default("USD") @db.VarChar(3)
+  status         DealStatus   @default(OPEN)
+  closeDate      DateTime?    @db.Date
+  archivedAt     DateTime?    @db.Timestamptz(3)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  owner          User         @relation(fields: [ownerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  pipeline       Pipeline     @relation(fields: [pipelineId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  stage          PipelineStage @relation(fields: [stageId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  company        Company?     @relation(fields: [companyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  contact        Contact?     @relation(fields: [contactId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  tasks          Task[]
+
+  @@index([organizationId, archivedAt, status])
+  @@index([organizationId, ownerId])
+  @@index([organizationId, pipelineId, stageId])
+}
+
+model Task {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String       @db.Uuid
+  creatorId      String       @db.Uuid
+  assigneeId     String       @db.Uuid
+  companyId      String?      @db.Uuid
+  contactId      String?      @db.Uuid
+  leadId         String?      @db.Uuid
+  dealId         String?      @db.Uuid
+  title          String       @db.VarChar(180)
+  description    String?      @db.VarChar(5000)
+  dueAt          DateTime?    @db.Timestamptz(3)
+  priority       TaskPriority @default(MEDIUM)
+  status         TaskStatus   @default(OPEN)
+  completedAt    DateTime?    @db.Timestamptz(3)
+  archivedAt     DateTime?    @db.Timestamptz(3)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  creator        User         @relation("TaskCreator", fields: [creatorId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  assignee       User         @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  company        Company?     @relation(fields: [companyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  contact        Contact?     @relation(fields: [contactId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  lead           Lead?        @relation(fields: [leadId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  deal           Deal?        @relation(fields: [dealId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([organizationId, archivedAt, status, dueAt])
+  @@index([organizationId, assigneeId, status])
 }
