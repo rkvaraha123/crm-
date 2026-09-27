@@ -83,10 +83,7 @@ export function AppearancePage({
       ),
     onSuccess: async (saved) => {
       setDraft(saved);
-      queryClient.setQueryData(
-        ['tenant', organizationId, 'appearance'],
-        saved,
-      );
+      queryClient.setQueryData(['tenant', organizationId, 'appearance'], saved);
       await queryClient.invalidateQueries({
         queryKey: ['tenant', organizationId, 'appearance'],
       });
