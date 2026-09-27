@@ -148,25 +148,19 @@ describe('CRM record scopes and activity timeline', () => {
 
   it('reports effective OWN, TEAM, and ORGANIZATION scopes', async () => {
     const sales = await request(app.getHttpServer())
-      .get(
-        `/api/v1/organizations/${organizationId}/me/record-scopes`,
-      )
+      .get(`/api/v1/organizations/${organizationId}/me/record-scopes`)
       .set(auth('scope-sales-a'))
       .expect(200);
     expect(sales.body).toEqual({ companies: 'OWN', contacts: 'OWN' });
 
     const lead = await request(app.getHttpServer())
-      .get(
-        `/api/v1/organizations/${organizationId}/me/record-scopes`,
-      )
+      .get(`/api/v1/organizations/${organizationId}/me/record-scopes`)
       .set(auth('scope-team-lead'))
       .expect(200);
     expect(lead.body).toEqual({ companies: 'TEAM', contacts: 'TEAM' });
 
     const viewer = await request(app.getHttpServer())
-      .get(
-        `/api/v1/organizations/${organizationId}/me/record-scopes`,
-      )
+      .get(`/api/v1/organizations/${organizationId}/me/record-scopes`)
       .set(auth('scope-viewer'))
       .expect(200);
     expect(viewer.body).toEqual({
@@ -200,9 +194,7 @@ describe('CRM record scopes and activity timeline', () => {
     ).not.toContain(ownB.body.id);
 
     await request(app.getHttpServer())
-      .get(
-        `/api/v1/organizations/${organizationId}/companies/${ownB.body.id}`,
-      )
+      .get(`/api/v1/organizations/${organizationId}/companies/${ownB.body.id}`)
       .set(auth('scope-sales-a'))
       .expect(404);
 
