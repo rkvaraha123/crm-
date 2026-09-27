@@ -1,9 +1,14 @@
-import type { Prisma } from '@prisma/client';
+import {
+  RecordResource,
+  RecordScope,
+  type Prisma,
+} from '@prisma/client';
 import {
   ensurePermissions,
   PERMISSION_KEYS,
   PermissionKey,
 } from '../permissions/default-permissions';
+
 const sales = PERMISSION_KEYS.filter((key) =>
   ['contacts', 'companies', 'leads', 'deals', 'tasks'].includes(
     key.split('.')[0],
@@ -14,24 +19,41 @@ const reads = PERMISSION_KEYS.filter(
     key.endsWith('.read') &&
     !['settings.read', 'audit_logs.read'].includes(key),
 );
+const collaboration: readonly PermissionKey[] = [
+  'activities.read',
+  'notes.create',
+  'notes.update',
+  'notes.delete',
+];
+
 export const ROLE_PERMISSIONS: Record<string, readonly PermissionKey[]> = {
   SUPER_ADMIN: PERMISSION_KEYS,
   ORG_ADMIN: PERMISSION_KEYS,
   MANAGER: [
     ...sales,
+    ...collaboration,
     'organizations.read',
     'users.read',
     'teams.read',
     'reports.read',
     'reports.export',
   ],
-  TEAM_LEAD: [...sales, 'users.read', 'teams.read', 'reports.read'],
-  SALES: sales,
+  TEAM_LEAD: [
+    ...sales,
+    ...collaboration,
+    'users.read',
+    'teams.read',
+    'reports.read',
+  ],
+  SALES: [...sales, ...collaboration],
   MARKETING: [
     'contacts.read',
     'contacts.create',
     'contacts.update',
     'companies.read',
+    'activities.read',
+    'notes.create',
+    'notes.update',
     'leads.read',
     'leads.create',
     'leads.update',
@@ -42,12 +64,32 @@ export const ROLE_PERMISSIONS: Record<string, readonly PermissionKey[]> = {
   SUPPORT: [
     'contacts.read',
     'companies.read',
+    'activities.read',
+    'notes.create',
+    'notes.update',
     'tasks.read',
     'tasks.create',
     'tasks.update',
   ],
   VIEWER: reads,
 };
+
+const ROLE_SCOPE: Record<string, RecordScope> = {
+  SUPER_ADMIN: RecordScope.ORGANIZATION,
+  ORG_ADMIN: RecordScope.ORGANIZATION,
+  MANAGER: RecordScope.ORGANIZATION,
+  TEAM_LEAD: RecordScope.TEAM,
+  SALES: RecordScope.OWN,
+  MARKETING: RecordScope.ORGANIZATION,
+  SUPPORT: RecordScope.ORGANIZATION,
+  VIEWER: RecordScope.ORGANIZATION,
+};
+
+const RECORD_RESOURCES = [
+  RecordResource.COMPANIES,
+  RecordResource.CONTACTS,
+] as const;
+
 async function mapPermissions(
   tx: Prisma.TransactionClient,
   roleId: string,
@@ -61,6 +103,23 @@ async function mapPermissions(
     skipDuplicates: true,
   });
 }
+
+async function mapRecordScopes(
+  tx: Prisma.TransactionClient,
+  roleId: string,
+  roleName: string,
+) {
+  const scope = ROLE_SCOPE[roleName];
+  if (!scope) return;
+  for (const resource of RECORD_RESOURCES) {
+    await tx.roleRecordScope.upsert({
+      where: { roleId_resource: { roleId, resource } },
+      create: { roleId, resource, scope },
+      update: { scope },
+    });
+  }
+}
+
 export async function createDefaultRoles(
   tx: Prisma.TransactionClient,
   organizationId: string,
@@ -79,8 +138,10 @@ export async function createDefaultRoles(
       update: {},
     });
     await mapPermissions(tx, role.id, keys, permissions);
+    await mapRecordScopes(tx, role.id, name);
   }
 }
+
 export async function seedFoundation(tx: Prisma.TransactionClient) {
   const organization = await tx.organization.upsert({
     where: { slug: 'rk-varaha-dev' },
@@ -106,5 +167,6 @@ export async function seedFoundation(tx: Prisma.TransactionClient) {
     ROLE_PERMISSIONS.SUPER_ADMIN,
     permissions,
   );
+  await mapRecordScopes(tx, globalRole.id, 'SUPER_ADMIN');
   return organization;
 }
