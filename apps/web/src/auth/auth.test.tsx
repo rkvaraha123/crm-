@@ -151,7 +151,8 @@ describe('authentication and organization UI', () => {
     const select = await screen.findByLabelText('Organization');
     expect((select as HTMLSelectElement).value).toBe('');
     fireEvent.change(select, { target: { value: 'a' } });
-    const topbarSelect = await screen.findByLabelText('Organization');
+    await screen.findByRole('link', { name: /Dashboard/ });
+    const topbarSelect = screen.getByLabelText('Organization');
     expect((topbarSelect as HTMLSelectElement).value).toBe('a');
     fireEvent.change(topbarSelect, { target: { value: 'b' } });
     await waitFor(() =>
