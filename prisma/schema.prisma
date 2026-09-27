@@ -33,17 +33,34 @@ enum TeamStatus {
   ARCHIVED
 }
 
+enum CompanyLifecycleStatus {
+  PROSPECT
+  CUSTOMER
+  PARTNER
+  OTHER
+}
+
+enum ContactLifecycleStatus {
+  LEAD
+  PROSPECT
+  CUSTOMER
+  OTHER
+}
+
 model Organization {
-  id        String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String               @db.VarChar(160)
-  slug      String               @unique @db.VarChar(80)
-  status    OrganizationStatus   @default(ACTIVE)
-  createdAt DateTime             @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime             @updatedAt @db.Timestamptz(3)
-  members   OrganizationMember[]
-  teams     Team[]
-  roles     Role[]
-  userRoles UserRole[]
+  id          String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String               @db.VarChar(160)
+  slug        String               @unique @db.VarChar(80)
+  status      OrganizationStatus   @default(ACTIVE)
+  createdAt   DateTime             @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime             @updatedAt @db.Timestamptz(3)
+  members     OrganizationMember[]
+  teams       Team[]
+  roles       Role[]
+  userRoles   UserRole[]
+  teamMembers TeamMember[]
+  companies   Company[]
+  contacts    Contact[]
 
   @@index([status])
 }
@@ -58,6 +75,9 @@ model User {
   createdAt          DateTime             @default(now()) @db.Timestamptz(3)
   updatedAt          DateTime             @updatedAt @db.Timestamptz(3)
   memberships        OrganizationMember[]
+  teamMemberships    TeamMember[]
+  ownedCompanies     Company[]
+  ownedContacts      Contact[]
 
   @@index([status])
 }
@@ -88,9 +108,25 @@ model Team {
   createdAt      DateTime     @default(now()) @db.Timestamptz(3)
   updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  members        TeamMember[]
 
   @@unique([organizationId, name])
   @@index([organizationId, status])
+}
+
+model TeamMember {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String       @db.Uuid
+  teamId         String       @db.Uuid
+  userId         String       @db.Uuid
+  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  team           Team         @relation(fields: [teamId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([organizationId, teamId, userId])
+  @@index([organizationId, userId])
+  @@index([teamId])
 }
 
 model Role {
@@ -141,4 +177,51 @@ model UserRole {
   @@unique([organizationId, userId, roleId])
   @@index([roleId])
   @@index([userId])
+}
+
+model Company {
+  id              String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId  String                 @db.Uuid
+  ownerId         String                 @db.Uuid
+  name            String                 @db.VarChar(180)
+  domain          String?                @db.VarChar(255)
+  phone           String?                @db.VarChar(40)
+  website         String?                @db.VarChar(2048)
+  industry        String?                @db.VarChar(120)
+  lifecycleStatus CompanyLifecycleStatus @default(PROSPECT)
+  archivedAt      DateTime?              @db.Timestamptz(3)
+  createdAt       DateTime               @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime               @updatedAt @db.Timestamptz(3)
+  organization    Organization           @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  owner           User                   @relation(fields: [ownerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  contacts        Contact[]
+
+  @@index([organizationId, archivedAt, name])
+  @@index([organizationId, ownerId])
+  @@index([organizationId, lifecycleStatus])
+}
+
+model Contact {
+  id              String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId  String                 @db.Uuid
+  ownerId         String                 @db.Uuid
+  companyId       String?                @db.Uuid
+  firstName       String                 @db.VarChar(80)
+  lastName        String                 @db.VarChar(80)
+  email           String?                @db.VarChar(254)
+  phone           String?                @db.VarChar(40)
+  jobTitle        String?                @db.VarChar(120)
+  lifecycleStatus ContactLifecycleStatus @default(LEAD)
+  archivedAt      DateTime?              @db.Timestamptz(3)
+  createdAt       DateTime               @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime               @updatedAt @db.Timestamptz(3)
+  organization    Organization           @relation(fields: [organizationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  owner           User                   @relation(fields: [ownerId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  company         Company?               @relation(fields: [companyId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([organizationId, archivedAt, lastName, firstName])
+  @@index([organizationId, ownerId])
+  @@index([organizationId, companyId])
+  @@index([organizationId, lifecycleStatus])
+  @@index([organizationId, email])
 }
