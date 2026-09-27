@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ApiClient } from '../../api-client';
 import { useAuthorization } from '../../authorization/authorization-context';
+import { ActivityPanel } from '../activities/activity-panel';
 
 interface Company {
   id: string;
@@ -30,6 +31,7 @@ export function CompaniesPanel({
   const [search, setSearch] = useState('');
   const [name, setName] = useState('');
   const [domain, setDomain] = useState('');
+  const [selected, setSelected] = useState<Company | null>(null);
 
   const companies = useQuery({
     queryKey: ['tenant', organizationId, 'companies', search],
@@ -73,10 +75,12 @@ export function CompaniesPanel({
         undefined,
         { method: 'DELETE' },
       ),
-    onSuccess: () =>
-      queryClient.invalidateQueries({
+    onSuccess: (_data, companyId) => {
+      if (selected?.id === companyId) setSelected(null);
+      return queryClient.invalidateQueries({
         queryKey: ['tenant', organizationId, 'companies'],
-      }),
+      });
+    },
   });
 
   if (!can('companies.read')) return null;
@@ -171,21 +175,40 @@ export function CompaniesPanel({
                     {company.owner.firstName} {company.owner.lastName}
                   </td>
                   <td className="py-3">
-                    {can('companies.delete') && (
-                      <button
-                        disabled={archive.isPending}
-                        onClick={() => archive.mutate(company.id)}
-                        type="button"
-                      >
-                        Archive
-                      </button>
-                    )}
+                    <div className="flex flex-wrap gap-2">
+                      {can('activities.read') && (
+                        <button
+                          onClick={() => setSelected(company)}
+                          type="button"
+                        >
+                          Timeline
+                        </button>
+                      )}
+                      {can('companies.delete') && (
+                        <button
+                          disabled={archive.isPending}
+                          onClick={() => archive.mutate(company.id)}
+                          type="button"
+                        >
+                          Archive
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+      {selected && (
+        <ActivityPanel
+          api={api}
+          organizationId={organizationId}
+          subjectKind="companies"
+          subjectId={selected.id}
+          title={selected.name}
+        />
       )}
     </section>
   );
