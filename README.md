@@ -10,7 +10,7 @@ docker compose -f compose.yaml exec api npm run db:seed
 
 Use http://localhost:5173 for the application and http://localhost:8080 for Keycloak. Create/identify a verified Keycloak user and run `npm run auth:bootstrap-admin` with the explicit identity/email configuration documented above. No permanent human credentials are seeded. Protected routes require real bearer tokens; tenant routes also require a matching, membership-verified `X-Organization-Id` header. Globally sensitive provisioning remains closed pending Task 4.
 
-Task 2 adds the PostgreSQL tenant and identity data foundation to the Phase 1 modular monolith. The React shell and public health endpoint remain available. No CRM business modules, CRM password storage, or queue infrastructure are included. Task 3 adds Keycloak and an isolated identity database.
+Task 2 adds the PostgreSQL tenant and identity data foundation to the modular monolith. Task 3 adds Keycloak and an isolated identity database. Task 4 adds PostgreSQL-authoritative RBAC. CRM Core V1 adds tenant-scoped companies, contacts, and team membership while CRM password storage and queue infrastructure remain intentionally absent.
 
 ## Requirements and project structure
 
@@ -29,11 +29,13 @@ apps/
     teams/                  Scoped team controller/service/repository
     roles/                  Scoped roles and default-role provisioning
     permissions/            Default permission catalog
+    companies/              Tenant-scoped company/account CRM module
+    contacts/               Tenant-scoped contact CRM module
   api/test/                 Real PostgreSQL/API integration suite
   web/                      React + Vite + Tailwind + Router + TanStack Query
   worker/                   Inactive future worker skeleton
 prisma/
-  schema.prisma             Eight models and four status enums
+  schema.prisma             Tenant, RBAC, team-membership, company and contact models
   migrations/               Versioned SQL, including custom tenant constraints
   seed.ts                   Idempotent development seed
 scripts/integration-tests.mjs
@@ -53,7 +55,7 @@ docker compose -f compose.yaml up --build -d
 docker compose -f compose.yaml exec api npm run db:seed
 ```
 
-The first command builds and starts CRM PostgreSQL, Keycloak, its dedicated database, API, and web. API startup runs `prisma migrate deploy` before starting NestJS. Seed is an explicit, development-only action. Source mounts support hot reload; rebuild after changing dependencies, Prisma models, or build configuration. The worker is intentionally not a running service.
+The first command builds and starts CRM PostgreSQL, Keycloak, its dedicated database, API, and web. API startup runs `prisma migrate deploy` before starting NestJS. Seed is an explicit, development-only action. Source mounts support hot reload; rebuild after changing dependencies, Prisma models, or build configuration. The worker is intentionally not a running service. Companies, contacts, and team membership are synchronous CRM Core V1 capabilities; email, imports, notifications, webhooks, and other long-running jobs remain deferred to the worker phase.
 
 - Web: http://localhost:5173
 - Health: http://localhost:3000/api/v1/health returns exactly `{"status":"ok"}`.

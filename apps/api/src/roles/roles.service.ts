@@ -1,18 +1,22 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { RecordResource, RecordScope } from '@prisma/client';
 import { RolesRepository } from './roles.repository';
 import { PageDto } from '../common/dto/page.dto';
 import { PrismaService } from '../common/database/prisma.service';
 import { OrganizationContextService } from '../common/tenant/organization-context.service';
 import { AuthorizationService } from '../authorization/authorization.service';
 import { AuthorizationAuditService } from '../authorization/authorization-audit.service';
+import { RecordScopeService } from '../authorization/record-scope.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { UpdateRolePermissionsDto } from './dto/update-role-permissions.dto';
 import { ReplaceUserRolesDto } from './dto/replace-user-roles.dto';
+import { UpdateRoleRecordScopesDto } from './dto/update-role-record-scopes.dto';
 import { ROLE_PERMISSIONS } from './default-roles';
 
 const isReservedRoleName = (name: string) =>
@@ -25,6 +29,7 @@ export class RolesService {
     private readonly context: OrganizationContextService,
     private readonly authorization: AuthorizationService,
     private readonly audit: AuthorizationAuditService,
+    private readonly recordScope: RecordScopeService,
   ) {}
   list(page: PageDto) {
     return this.repository.list(page);
@@ -70,9 +75,22 @@ export class RolesService {
           permissions: {
             create: permissions.map(({ id }) => ({ permissionId: id })),
           },
+          recordScopes: {
+            create: [
+              {
+                resource: RecordResource.COMPANIES,
+                scope: RecordScope.OWN,
+              },
+              {
+                resource: RecordResource.CONTACTS,
+                scope: RecordScope.OWN,
+              },
+            ],
+          },
         },
         include: {
           permissions: { select: { permission: true } },
+          recordScopes: true,
         },
       });
     });
@@ -137,11 +155,71 @@ export class RolesService {
       });
       return tx.role.findUniqueOrThrow({
         where: { id: roleId },
-        include: { permissions: { select: { permission: true } } },
+        include: {
+          permissions: { select: { permission: true } },
+          recordScopes: true,
+        },
       });
     });
     this.audit.record({
       action: 'ROLE_PERMISSIONS_CHANGED',
+      actorUserId: context.userId,
+      organizationId,
+      targetId: role.id,
+    });
+    return role;
+  }
+
+  async replaceRecordScopes(roleId: string, data: UpdateRoleRecordScopesDto) {
+    const context = this.context.current();
+    const organizationId = this.context.requireOrganization();
+    const role = await this.prisma.$transaction(async (tx) => {
+      await this.authorization.assertRoleMutable(
+        tx,
+        roleId,
+        organizationId,
+        context.userId,
+      );
+      const requested = [
+        {
+          resource: RecordResource.COMPANIES,
+          scope: data.companies,
+        },
+        {
+          resource: RecordResource.CONTACTS,
+          scope: data.contacts,
+        },
+      ] as const;
+
+      for (const { resource, scope } of requested) {
+        if (
+          !(await this.recordScope.canGrant(
+            context.userId,
+            organizationId,
+            resource,
+            scope,
+            tx,
+          ))
+        ) {
+          throw new ForbiddenException('Record scope assignment denied');
+        }
+        await tx.roleRecordScope.upsert({
+          where: { roleId_resource: { roleId, resource } },
+          create: { roleId, resource, scope },
+          update: { scope },
+        });
+      }
+
+      return tx.role.findUniqueOrThrow({
+        where: { id: roleId },
+        include: {
+          permissions: { select: { permission: true } },
+          recordScopes: true,
+        },
+      });
+    });
+    this.audit.record({
+      action: 'ROLE_RECORD_SCOPES_CHANGED',
       actorUserId: context.userId,
       organizationId,
       targetId: role.id,

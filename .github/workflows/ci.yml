@@ -1,0 +1,93 @@
+name: CRM CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - task-4-rbac
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_USER: rk_varaha
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: rk_varaha_crm
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rk_varaha -d rk_varaha_crm"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://rk_varaha:ci-only-password@localhost:5432/rk_varaha_crm?schema=public
+      TEST_DATABASE_URL: postgresql://rk_varaha:ci-only-password@localhost:5432/rk_varaha_crm?schema=public
+      KEYCLOAK_PUBLIC_URL: http://identity.test
+      KEYCLOAK_INTERNAL_URL: http://identity.test
+      KEYCLOAK_ISSUER: http://identity.test/realms/test
+      KEYCLOAK_JWKS_URL: http://identity.test/realms/test/certs
+      KEYCLOAK_REALM: test
+      KEYCLOAK_API_AUDIENCE: api
+      KEYCLOAK_ADMIN_CLIENT_ID: admin
+      KEYCLOAK_ADMIN_CLIENT_SECRET: test-only-not-a-real-secret-00000000
+      CORS_ORIGINS: http://localhost:5173
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Reject tracked local environment files
+        shell: bash
+        run: |
+          set -euo pipefail
+          tracked="$(git ls-files | grep -E '(^|/)\.env($|\.)' | grep -v -E '(^|/)\.env\.example$' || true)"
+          if [ -n "$tracked" ]; then
+            echo "::error::Tracked environment files detected:"
+            echo "$tracked"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run db:generate
+
+      - name: Validate Prisma schema
+        run: npm run db:validate
+
+      - name: Formatting
+        shell: bash
+        run: |
+          npm run format
+          git diff --check
+          git diff --exit-code
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: PostgreSQL integration tests
+        run: npm run test:integration
