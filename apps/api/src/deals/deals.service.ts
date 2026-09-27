@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ActivitySubjectType, ActivityType } from '@prisma/client';
 import { RecordScopeService } from '../authorization/record-scope.service';
 import { PrismaService } from '../common/database/prisma.service';
+import { ProductFeatureService } from '../common/product-feature.service';
 import { OrganizationContextService } from '../common/tenant/organization-context.service';
 import { CreateDealDto } from './dto/create-deal.dto';
 import { UpdateDealDto } from './dto/update-deal.dto';
@@ -19,9 +20,11 @@ export class DealsService {
     private readonly prisma: PrismaService,
     private readonly context: OrganizationContextService,
     private readonly scopes: RecordScopeService,
+    private readonly features: ProductFeatureService,
   ) {}
 
-  listPipelines() {
+  async listPipelines() {
+    await this.features.require('dealsEnabled');
     return this.prisma.pipeline.findMany({
       where: {
         organizationId: this.context.requireOrganization(),
@@ -38,6 +41,7 @@ export class DealsService {
   }
 
   async list(search?: string) {
+    await this.features.require('dealsEnabled');
     const organizationId = this.context.requireOrganization();
     const access = await this.scopes.dealWhere();
     return this.prisma.deal.findMany({
@@ -104,6 +108,7 @@ export class DealsService {
   }
 
   async find(id: string) {
+    await this.features.require('dealsEnabled');
     const access = await this.scopes.dealWhere();
     return this.prisma.deal.findFirstOrThrow({
       where: {
@@ -116,6 +121,7 @@ export class DealsService {
   }
 
   async create(data: CreateDealDto) {
+    await this.features.require('dealsEnabled');
     await this.validateAssociations(
       data.pipelineId,
       data.stageId,
