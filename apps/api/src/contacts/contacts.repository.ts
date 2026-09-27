@@ -39,10 +39,16 @@ export class ContactsRepository {
         ...(search
           ? {
               OR: [
-                { firstName: { contains: search, mode: 'insensitive' as const } },
-                { lastName: { contains: search, mode: 'insensitive' as const } },
+                {
+                  firstName: { contains: search, mode: 'insensitive' as const },
+                },
+                {
+                  lastName: { contains: search, mode: 'insensitive' as const },
+                },
                 { email: { contains: search, mode: 'insensitive' as const } },
-                { jobTitle: { contains: search, mode: 'insensitive' as const } },
+                {
+                  jobTitle: { contains: search, mode: 'insensitive' as const },
+                },
               ],
             }
           : {}),
