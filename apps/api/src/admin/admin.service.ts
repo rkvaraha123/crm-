@@ -3,10 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  OrganizationStatus,
-  UserStatus,
-} from '@prisma/client';
+import { OrganizationStatus, UserStatus } from '@prisma/client';
 import { PrismaService } from '../common/database/prisma.service';
 import { UpdateOrganizationAppearanceDto } from '../organizations/dto/update-organization-appearance.dto';
 import { ListAdminOrganizationsDto } from './dto/list-admin-organizations.dto';
@@ -234,7 +231,8 @@ export class AdminService {
       select: { id: true },
     });
     if (!user) throw new NotFoundException('User not found');
-    if (status !== UserStatus.ACTIVE) await this.assertUserNotPlatformAdmin(userId);
+    if (status !== UserStatus.ACTIVE)
+      await this.assertUserNotPlatformAdmin(userId);
     return this.prisma.user.update({
       where: { id: userId },
       data: { status },
