@@ -23,9 +23,7 @@ export class CrmConfigurationController {
 
   @Get('modules')
   @Access({ kind: 'tenant', parameter: 'organizationId' })
-  modules(
-    @Param('organizationId', ParseUUIDPipe) _organizationId: string,
-  ) {
+  modules(@Param('organizationId', ParseUUIDPipe) _organizationId: string) {
     void _organizationId;
     return this.configuration.listModules();
   }
