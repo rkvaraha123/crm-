@@ -4,6 +4,7 @@ import { PrismaService } from '../common/database/prisma.service';
 import { OrganizationContextService } from '../common/tenant/organization-context.service';
 import { PageDto } from '../common/dto/page.dto';
 import { createDefaultRoles } from '../roles/default-roles';
+import { seedOrganizationProduct } from '../configuration/crm-modules';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateOrganizationAppearanceDto } from './dto/update-organization-appearance.dto';
@@ -19,6 +20,7 @@ export class OrganizationsRepository {
       async (tx) => {
         const organization = await tx.organization.create({ data });
         await createDefaultRoles(tx, organization.id);
+        await seedOrganizationProduct(tx, organization.id);
         return organization;
       },
       { timeout: 30000 },

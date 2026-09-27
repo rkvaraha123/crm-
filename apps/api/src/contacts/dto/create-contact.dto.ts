@@ -3,6 +3,7 @@ import { Transform } from 'class-transformer';
 import {
   IsEmail,
   IsEnum,
+  IsObject,
   IsOptional,
   IsString,
   IsUUID,
@@ -57,4 +58,7 @@ export class CreateContactDto {
   @ValidateIf((_object, value: unknown) => value !== undefined)
   @IsEnum(ContactLifecycleStatus)
   lifecycleStatus?: ContactLifecycleStatus;
+  @IsOptional()
+  @IsObject()
+  customFields?: Record<string, unknown>;
 }

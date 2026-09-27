@@ -2,6 +2,7 @@ import { CompanyLifecycleStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import {
   IsEnum,
+  IsObject,
   IsOptional,
   IsString,
   IsUrl,
@@ -55,4 +56,7 @@ export class UpdateCompanyDto {
   @IsOptional()
   @IsEnum(CompanyLifecycleStatus)
   lifecycleStatus?: CompanyLifecycleStatus;
+  @IsOptional()
+  @IsObject()
+  customFields?: Record<string, unknown>;
 }

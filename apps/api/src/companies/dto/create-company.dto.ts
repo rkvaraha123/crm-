@@ -2,6 +2,7 @@ import { CompanyLifecycleStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import {
   IsEnum,
+  IsObject,
   IsOptional,
   IsString,
   IsUrl,
@@ -55,4 +56,7 @@ export class CreateCompanyDto {
   @ValidateIf((_object, value: unknown) => value !== undefined)
   @IsEnum(CompanyLifecycleStatus)
   lifecycleStatus?: CompanyLifecycleStatus;
+  @IsOptional()
+  @IsObject()
+  customFields?: Record<string, unknown>;
 }

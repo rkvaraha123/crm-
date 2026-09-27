@@ -3,6 +3,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ApiClient } from '../../api-client';
 import { useAuthorization } from '../../authorization/authorization-context';
 import { ActivityPanel } from '../activities/activity-panel';
+import {
+  CustomFieldInputs,
+  useCustomFields,
+} from '../../custom-fields/custom-field-inputs';
 
 interface CompanyOption {
   id: string;
@@ -41,6 +45,8 @@ export function ContactsPanel({
   const [email, setEmail] = useState('');
   const [companyId, setCompanyId] = useState('');
   const [selected, setSelected] = useState<Contact | null>(null);
+  const [customFields, setCustomFields] = useState<Record<string, unknown>>({});
+  const fields = useCustomFields(api, organizationId, 'CONTACT');
 
   const contacts = useQuery({
     queryKey: ['tenant', organizationId, 'contacts', search],
@@ -77,6 +83,7 @@ export function ContactsPanel({
             lastName,
             ...(email.trim() ? { email: email.trim().toLowerCase() } : {}),
             ...(companyId ? { companyId } : {}),
+            customFields,
           }),
         },
       ),
@@ -85,6 +92,7 @@ export function ContactsPanel({
       setLastName('');
       setEmail('');
       setCompanyId('');
+      setCustomFields({});
       await queryClient.invalidateQueries({
         queryKey: ['tenant', organizationId, 'contacts'],
       });
@@ -177,6 +185,13 @@ export function ContactsPanel({
               </option>
             ))}
           </select>
+          <CustomFieldInputs
+            fields={fields.data ?? []}
+            values={customFields}
+            onChange={(key, value) =>
+              setCustomFields((current) => ({ ...current, [key]: value }))
+            }
+          />
           <button
             disabled={create.isPending || !firstName.trim() || !lastName.trim()}
             type="submit"

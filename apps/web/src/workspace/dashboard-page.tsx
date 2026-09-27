@@ -3,15 +3,8 @@ import { Link } from 'react-router-dom';
 import type { ApiClient, CurrentUser } from '../api-client';
 import { useAuthorization } from '../authorization/authorization-context';
 
-interface CompanySummary {
+interface RecordSummary {
   id: string;
-  name: string;
-}
-
-interface ContactSummary {
-  id: string;
-  firstName: string;
-  lastName: string;
 }
 
 interface TeamSummary {
@@ -22,6 +15,9 @@ interface TeamSummary {
 interface RecordScopes {
   companies: 'OWN' | 'TEAM' | 'ORGANIZATION' | null;
   contacts: 'OWN' | 'TEAM' | 'ORGANIZATION' | null;
+  leads: 'OWN' | 'TEAM' | 'ORGANIZATION' | null;
+  deals: 'OWN' | 'TEAM' | 'ORGANIZATION' | null;
+  tasks: 'OWN' | 'TEAM' | 'ORGANIZATION' | null;
 }
 
 function displayCount(count: number | undefined) {
@@ -40,33 +36,69 @@ export function DashboardPage({
   api,
   organizationId,
   user,
+  enabledModules,
 }: {
   api: ApiClient;
   organizationId: string;
   user: CurrentUser;
+  enabledModules: Set<string>;
 }) {
   const { can } = useAuthorization();
+  const enabled = (key: string) => enabledModules.has(key);
 
   const companies = useQuery({
     queryKey: ['tenant', organizationId, 'dashboard', 'companies'],
     queryFn: ({ signal }) =>
-      api<CompanySummary[]>(
+      api<RecordSummary[]>(
         `/organizations/${organizationId}/companies?limit=100`,
         organizationId,
         signal,
       ),
-    enabled: can('companies.read'),
+    enabled: enabled('COMPANIES') && can('companies.read'),
   });
 
   const contacts = useQuery({
     queryKey: ['tenant', organizationId, 'dashboard', 'contacts'],
     queryFn: ({ signal }) =>
-      api<ContactSummary[]>(
+      api<RecordSummary[]>(
         `/organizations/${organizationId}/contacts?limit=100`,
         organizationId,
         signal,
       ),
-    enabled: can('contacts.read'),
+    enabled: enabled('CONTACTS') && can('contacts.read'),
+  });
+
+  const leads = useQuery({
+    queryKey: ['tenant', organizationId, 'dashboard', 'leads'],
+    queryFn: ({ signal }) =>
+      api<RecordSummary[]>(
+        `/organizations/${organizationId}/leads?limit=100`,
+        organizationId,
+        signal,
+      ),
+    enabled: enabled('LEADS') && can('leads.read'),
+  });
+
+  const deals = useQuery({
+    queryKey: ['tenant', organizationId, 'dashboard', 'deals'],
+    queryFn: ({ signal }) =>
+      api<RecordSummary[]>(
+        `/organizations/${organizationId}/deals?limit=100`,
+        organizationId,
+        signal,
+      ),
+    enabled: enabled('DEALS') && can('deals.read'),
+  });
+
+  const tasks = useQuery({
+    queryKey: ['tenant', organizationId, 'dashboard', 'tasks'],
+    queryFn: ({ signal }) =>
+      api<RecordSummary[]>(
+        `/organizations/${organizationId}/tasks?limit=100`,
+        organizationId,
+        signal,
+      ),
+    enabled: enabled('TASKS') && can('tasks.read'),
   });
 
   const teams = useQuery({
@@ -77,7 +109,7 @@ export function DashboardPage({
         organizationId,
         signal,
       ),
-    enabled: can('teams.read'),
+    enabled: enabled('TEAM') && can('teams.read'),
   });
 
   const scopes = useQuery({
@@ -94,6 +126,57 @@ export function DashboardPage({
   const greeting =
     hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
+  const cards = [
+    {
+      key: 'COMPANIES',
+      permission: 'companies.read',
+      to: '/app/companies',
+      label: 'Companies',
+      count: companies.data?.length,
+      pending: companies.isPending,
+    },
+    {
+      key: 'CONTACTS',
+      permission: 'contacts.read',
+      to: '/app/contacts',
+      label: 'Contacts',
+      count: contacts.data?.length,
+      pending: contacts.isPending,
+    },
+    {
+      key: 'LEADS',
+      permission: 'leads.read',
+      to: '/app/leads',
+      label: 'Leads',
+      count: leads.data?.length,
+      pending: leads.isPending,
+    },
+    {
+      key: 'DEALS',
+      permission: 'deals.read',
+      to: '/app/deals',
+      label: 'Deals',
+      count: deals.data?.length,
+      pending: deals.isPending,
+    },
+    {
+      key: 'TASKS',
+      permission: 'tasks.read',
+      to: '/app/tasks',
+      label: 'Tasks',
+      count: tasks.data?.length,
+      pending: tasks.isPending,
+    },
+    {
+      key: 'TEAM',
+      permission: 'teams.read',
+      to: '/app/team',
+      label: 'Teams',
+      count: teams.data?.length,
+      pending: teams.isPending,
+    },
+  ].filter((card) => enabled(card.key) && can(card.permission));
+
   return (
     <section>
       <div className="crm-page-heading">
@@ -102,46 +185,31 @@ export function DashboardPage({
           <h1>
             {greeting}, {user.firstName}.
           </h1>
-          <p>Your current CRM workload and access at a glance.</p>
+          <p>Your CRM workload, pipeline, and access at a glance.</p>
         </div>
       </div>
 
       <div className="crm-metric-grid">
-        {can('companies.read') && (
-          <Link className="crm-metric-card" to="/app/companies">
-            <span>Companies</span>
-            <strong>
-              {companies.isPending ? '…' : displayCount(companies.data?.length)}
-            </strong>
+        {cards.map((card) => (
+          <Link className="crm-metric-card" key={card.key} to={card.to}>
+            <span>{card.label}</span>
+            <strong>{card.pending ? '…' : displayCount(card.count)}</strong>
             <small>Records visible to you</small>
           </Link>
-        )}
-        {can('contacts.read') && (
-          <Link className="crm-metric-card" to="/app/contacts">
-            <span>Contacts</span>
-            <strong>
-              {contacts.isPending ? '…' : displayCount(contacts.data?.length)}
-            </strong>
-            <small>Records visible to you</small>
-          </Link>
-        )}
-        {can('teams.read') && (
-          <Link className="crm-metric-card" to="/app/team">
-            <span>Teams</span>
-            <strong>
-              {teams.isPending ? '…' : displayCount(teams.data?.length)}
-            </strong>
-            <small>Active workspace teams</small>
-          </Link>
-        )}
+        ))}
         <div className="crm-metric-card crm-metric-card-static">
           <span>CRM access</span>
           <strong className="crm-scope-value">
             {scopes.isPending
               ? '…'
-              : scopeLabel(scopes.data?.companies ?? null)}
+              : scopeLabel(
+                  scopes.data?.deals ??
+                    scopes.data?.leads ??
+                    scopes.data?.companies ??
+                    null,
+                )}
           </strong>
-          <small>Contacts: {scopeLabel(scopes.data?.contacts ?? null)}</small>
+          <small>Scope is enforced by the API</small>
         </div>
       </div>
 
@@ -154,29 +222,40 @@ export function DashboardPage({
             </div>
           </div>
           <div className="crm-action-list">
-            {can('companies.read') && (
-              <Link to="/app/companies">
+            {enabled('LEADS') && can('leads.read') && (
+              <Link to="/app/leads">
                 <span>
-                  <strong>Companies</strong>
-                  <small>Search accounts and review activity timelines.</small>
+                  <strong>Qualify leads</strong>
+                  <small>Review new prospects and update lead status.</small>
                 </span>
                 <span aria-hidden="true">→</span>
               </Link>
             )}
-            {can('contacts.read') && (
-              <Link to="/app/contacts">
+            {enabled('DEALS') && can('deals.read') && (
+              <Link to="/app/deals">
                 <span>
-                  <strong>Contacts</strong>
-                  <small>Manage people, relationships, and notes.</small>
+                  <strong>Move deals</strong>
+                  <small>
+                    Advance opportunities through the sales pipeline.
+                  </small>
                 </span>
                 <span aria-hidden="true">→</span>
               </Link>
             )}
-            {can('teams.read') && (
-              <Link to="/app/team">
+            {enabled('TASKS') && can('tasks.read') && (
+              <Link to="/app/tasks">
                 <span>
-                  <strong>Team</strong>
-                  <small>Review teams and their active members.</small>
+                  <strong>Complete follow-ups</strong>
+                  <small>Review due tasks and team ownership.</small>
+                </span>
+                <span aria-hidden="true">→</span>
+              </Link>
+            )}
+            {enabled('REPORTS') && can('reports.read') && (
+              <Link to="/app/reports">
+                <span>
+                  <strong>Review reports</strong>
+                  <small>See live lead, pipeline, and workload metrics.</small>
                 </span>
                 <span aria-hidden="true">→</span>
               </Link>
@@ -187,31 +266,31 @@ export function DashboardPage({
         <section className="crm-surface">
           <div className="crm-section-heading">
             <div>
-              <p className="crm-page-kicker">Product status</p>
-              <h2>Available now</h2>
+              <p className="crm-page-kicker">Configured product</p>
+              <h2>Enabled modules</h2>
             </div>
           </div>
           <ul className="crm-status-list">
-            <li>
-              <span className="crm-status-dot" aria-hidden="true" />
-              Companies and activity timelines
-            </li>
-            <li>
-              <span className="crm-status-dot" aria-hidden="true" />
-              Contacts and relationship notes
-            </li>
-            <li>
-              <span className="crm-status-dot" aria-hidden="true" />
-              Team-based record access
-            </li>
-            <li>
-              <span className="crm-status-dot" aria-hidden="true" />
-              Roles, permissions, and record scopes
-            </li>
+            {[
+              ['COMPANIES', 'Companies'],
+              ['CONTACTS', 'Contacts'],
+              ['LEADS', 'Leads'],
+              ['DEALS', 'Deals & pipelines'],
+              ['TASKS', 'Tasks'],
+              ['REPORTS', 'Reports'],
+              ['TEAM', 'Team management'],
+            ]
+              .filter(([key]) => enabled(key))
+              .map(([key, label]) => (
+                <li key={key}>
+                  <span className="crm-status-dot" aria-hidden="true" />
+                  {label}
+                </li>
+              ))}
           </ul>
           <p className="crm-muted-note">
-            Leads, deals, tasks, and reporting will appear here only after their
-            backend modules are implemented.
+            Platform administrators can change this product mix from the CRM
+            Admin Panel without changing frontend code.
           </p>
         </section>
       </div>

@@ -3,6 +3,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ApiClient } from '../../api-client';
 import { useAuthorization } from '../../authorization/authorization-context';
 import { ActivityPanel } from '../activities/activity-panel';
+import {
+  CustomFieldInputs,
+  useCustomFields,
+} from '../../custom-fields/custom-field-inputs';
 
 interface Company {
   id: string;
@@ -32,6 +36,8 @@ export function CompaniesPanel({
   const [name, setName] = useState('');
   const [domain, setDomain] = useState('');
   const [selected, setSelected] = useState<Company | null>(null);
+  const [customFields, setCustomFields] = useState<Record<string, unknown>>({});
+  const fields = useCustomFields(api, organizationId, 'COMPANY');
 
   const companies = useQuery({
     queryKey: ['tenant', organizationId, 'companies', search],
@@ -55,12 +61,14 @@ export function CompaniesPanel({
           body: JSON.stringify({
             name,
             ...(domain.trim() ? { domain: domain.trim().toLowerCase() } : {}),
+            customFields,
           }),
         },
       ),
     onSuccess: async () => {
       setName('');
       setDomain('');
+      setCustomFields({});
       await queryClient.invalidateQueries({
         queryKey: ['tenant', organizationId, 'companies'],
       });
@@ -129,6 +137,13 @@ export function CompaniesPanel({
             maxLength={255}
             value={domain}
             onChange={(event) => setDomain(event.target.value)}
+          />
+          <CustomFieldInputs
+            fields={fields.data ?? []}
+            values={customFields}
+            onChange={(key, value) =>
+              setCustomFields((current) => ({ ...current, [key]: value }))
+            }
           />
           <button disabled={create.isPending || !name.trim()} type="submit">
             {create.isPending ? 'Creating…' : 'Add company'}

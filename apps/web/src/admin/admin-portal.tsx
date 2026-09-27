@@ -4,6 +4,7 @@ import { Navigate, NavLink, Route, Routes } from 'react-router-dom';
 import type { ApiClient } from '../api-client';
 import { createApiClient } from '../api-client';
 import { useAuth } from '../auth/auth-context';
+import { CrmBuilderPage } from './crm-builder-page';
 import {
   DEFAULT_APPEARANCE,
   type OrganizationAppearance,
@@ -147,6 +148,7 @@ export function AdminPortal() {
           <NavLink to="/admin/dashboard">Dashboard</NavLink>
           <NavLink to="/admin/organizations">Organizations</NavLink>
           <NavLink to="/admin/users">Users</NavLink>
+          <NavLink to="/admin/builder">CRM Builder</NavLink>
           <NavLink to="/admin/appearance">Appearance</NavLink>
           <NavLink to="/admin/system">System Health</NavLink>
         </nav>
@@ -183,6 +185,7 @@ export function AdminPortal() {
               element={<AdminOrganizations api={api} />}
             />
             <Route path="users" element={<AdminUsers api={api} />} />
+            <Route path="builder" element={<CrmBuilderPage api={api} />} />
             <Route path="appearance" element={<AdminAppearance api={api} />} />
             <Route path="system" element={<AdminSystem api={api} />} />
             <Route
