@@ -4,6 +4,7 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { PageDto } from '../common/dto/page.dto';
 import { UpdateOrganizationAppearanceDto } from './dto/update-organization-appearance.dto';
+import { UpdateOrganizationProductConfigDto } from './dto/update-organization-product-config.dto';
 @Injectable()
 export class OrganizationsService {
   constructor(private readonly repository: OrganizationsRepository) {}
@@ -19,6 +20,14 @@ export class OrganizationsService {
 
   getAppearance() {
     return this.repository.getAppearance();
+  }
+
+  getProductConfig() {
+    return this.repository.getProductConfig();
+  }
+
+  updateProductConfig(data: UpdateOrganizationProductConfigDto) {
+    return this.repository.updateProductConfig(data);
   }
 
   updateAppearance(data: UpdateOrganizationAppearanceDto) {
