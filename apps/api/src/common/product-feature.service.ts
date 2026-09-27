@@ -25,6 +25,8 @@ export class ProductFeatureService {
       update: {},
     });
     if (!config[feature])
-      throw new ForbiddenException('CRM module is disabled for this organization');
+      throw new ForbiddenException(
+        'CRM module is disabled for this organization',
+      );
   }
 }
