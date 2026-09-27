@@ -116,7 +116,9 @@ describe('authentication and organization UI', () => {
     mockApi();
     await setup();
     expect(await screen.findByText('Test User')).toBeDefined();
-    expect(await screen.findByRole('link', { name: /Dashboard/ })).toBeDefined();
+    expect(
+      await screen.findByRole('link', { name: /Dashboard/ }),
+    ).toBeDefined();
   });
   it('automatically selects a single organization', async () => {
     mockApi([organizations[0]]);
@@ -130,9 +132,7 @@ describe('authentication and organization UI', () => {
       ['settings.read', 'settings.update', 'users.read'],
     );
     await setup();
-    fireEvent.click(
-      await screen.findByRole('link', { name: /Settings/ }),
-    );
+    fireEvent.click(await screen.findByRole('link', { name: /Settings/ }));
     fireEvent.click(
       await screen.findByRole('link', { name: /Roles & Permissions/ }),
     );
