@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { OrganizationStatus, UserStatus } from '@prisma/client';
 import { PrismaService } from '../common/database/prisma.service';
+import { OrganizationContextService } from '../common/tenant/organization-context.service';
 import { UpdateOrganizationAppearanceDto } from '../organizations/dto/update-organization-appearance.dto';
 import { ListAdminOrganizationsDto } from './dto/list-admin-organizations.dto';
 import { ListAdminUsersDto } from './dto/list-admin-users.dto';
@@ -20,9 +21,13 @@ const DEFAULT_APPEARANCE = {
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly context: OrganizationContextService,
+  ) {}
 
-  async me(userId: string) {
+  async me() {
+    const userId = this.context.current().userId;
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: userId },
       select: {
