@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ActivitySubjectType, ActivityType } from '@prisma/client';
+import { ActivitySubjectType, ActivityType, CustomFieldEntity } from '@prisma/client';
 import { RecordScopeService } from '../authorization/record-scope.service';
 import { PrismaService } from '../common/database/prisma.service';
 import { OrganizationContextService } from '../common/tenant/organization-context.service';
+import { CrmConfigurationService } from '../configuration/crm-configuration.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { ListContactsDto } from './dto/list-contacts.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
@@ -27,6 +28,7 @@ export class ContactsRepository {
     private readonly prisma: PrismaService,
     private readonly context: OrganizationContextService,
     private readonly recordScope: RecordScopeService,
+    private readonly configuration: CrmConfigurationService,
   ) {}
 
   async list(query: ListContactsDto) {
@@ -102,10 +104,21 @@ export class ContactsRepository {
     if (data.companyId) await this.assertCompany(data.companyId);
     const context = this.context.current();
     const organizationId = this.context.requireOrganization();
+    const customFields = await this.configuration.validateCustomValues(
+      CustomFieldEntity.CONTACT,
+      data.customFields,
+    );
     return this.prisma.$transaction(async (tx) => {
       const contact = await tx.contact.create({
         data: {
-          ...data,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          jobTitle: data.jobTitle,
+          companyId: data.companyId,
+          lifecycleStatus: data.lifecycleStatus,
+          customFields,
           organizationId,
           ownerId: context.userId,
         },
@@ -132,10 +145,26 @@ export class ContactsRepository {
     if (data.companyId) await this.assertCompany(data.companyId);
     const context = this.context.current();
     const organizationId = this.context.requireOrganization();
+    const customFields =
+      data.customFields === undefined
+        ? undefined
+        : await this.configuration.validateCustomValues(
+            CustomFieldEntity.CONTACT,
+            data.customFields,
+          );
     return this.prisma.$transaction(async (tx) => {
       const contact = await tx.contact.update({
         where: { id: existing.id },
-        data,
+        data: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          jobTitle: data.jobTitle,
+          companyId: data.companyId,
+          lifecycleStatus: data.lifecycleStatus,
+          ...(customFields === undefined ? {} : { customFields }),
+        },
         include: {
           owner: { select: ownerSelect },
           company: { select: companySelect },
