@@ -26,13 +26,7 @@ interface WorkspaceShellProps {
 }
 
 type CrmModuleKey =
-  | 'COMPANIES'
-  | 'CONTACTS'
-  | 'LEADS'
-  | 'DEALS'
-  | 'TASKS'
-  | 'REPORTS'
-  | 'TEAM';
+  'COMPANIES' | 'CONTACTS' | 'LEADS' | 'DEALS' | 'TASKS' | 'REPORTS' | 'TEAM';
 
 interface OrganizationModule {
   key: CrmModuleKey;
@@ -159,10 +153,11 @@ export function WorkspaceShell({
           ...spec,
           label: moduleMap.get(spec.key)?.label ?? spec.key,
           navOrder: moduleMap.get(spec.key)?.navOrder ?? 999,
-          description:
-            moduleMap.get(spec.key)?.description || spec.description,
+          description: moduleMap.get(spec.key)?.description || spec.description,
         }))
-        .sort((a, b) => a.navOrder - b.navOrder || a.label.localeCompare(b.label)),
+        .sort(
+          (a, b) => a.navOrder - b.navOrder || a.label.localeCompare(b.label),
+        ),
     [can, moduleMap],
   );
 
@@ -344,10 +339,7 @@ export function WorkspaceShell({
                 path="companies"
                 element={
                   moduleEnabled('COMPANIES') && can('companies.read') ? (
-                    <CompaniesPanel
-                      api={api}
-                      organizationId={organizationId}
-                    />
+                    <CompaniesPanel api={api} organizationId={organizationId} />
                   ) : (
                     <Navigate to="/app/dashboard" replace />
                   )
