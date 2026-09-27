@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ApiClient } from '../api-client';
 import {
@@ -125,7 +126,7 @@ export function AppearancePage({
     '--preview-surface': draft.surfaceColor,
     '--preview-sidebar-text': contrastColor(draft.sidebarColor),
     '--preview-surface-text': contrastColor(draft.surfaceColor),
-  } as React.CSSProperties;
+  } as CSSProperties;
 
   return (
     <section>
