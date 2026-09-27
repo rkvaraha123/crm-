@@ -193,9 +193,7 @@ export function DashboardPage({
         {cards.map((card) => (
           <Link className="crm-metric-card" key={card.key} to={card.to}>
             <span>{card.label}</span>
-            <strong>
-              {card.pending ? '…' : displayCount(card.count)}
-            </strong>
+            <strong>{card.pending ? '…' : displayCount(card.count)}</strong>
             <small>Records visible to you</small>
           </Link>
         ))}
@@ -237,7 +235,9 @@ export function DashboardPage({
               <Link to="/app/deals">
                 <span>
                   <strong>Move deals</strong>
-                  <small>Advance opportunities through the sales pipeline.</small>
+                  <small>
+                    Advance opportunities through the sales pipeline.
+                  </small>
                 </span>
                 <span aria-hidden="true">→</span>
               </Link>
