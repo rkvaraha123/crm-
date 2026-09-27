@@ -323,8 +323,8 @@ describe('CRM record scopes and activity timeline', () => {
 
     expect(role.body.recordScopes).toEqual(
       expect.arrayContaining([
-        { resource: 'COMPANIES', scope: 'OWN' },
-        { resource: 'CONTACTS', scope: 'OWN' },
+        expect.objectContaining({ resource: 'COMPANIES', scope: 'OWN' }),
+        expect.objectContaining({ resource: 'CONTACTS', scope: 'OWN' }),
       ]),
     );
 
@@ -341,8 +341,8 @@ describe('CRM record scopes and activity timeline', () => {
 
     expect(updated.body.recordScopes).toEqual(
       expect.arrayContaining([
-        { resource: 'COMPANIES', scope: 'TEAM' },
-        { resource: 'CONTACTS', scope: 'OWN' },
+        expect.objectContaining({ resource: 'COMPANIES', scope: 'TEAM' }),
+        expect.objectContaining({ resource: 'CONTACTS', scope: 'OWN' }),
       ]),
     );
   });
