@@ -20,7 +20,7 @@ import { RecordScopeService } from '../authorization/record-scope.service';
 export class PermissionsController {
   constructor(
     private readonly roles: RolesService,
-    private readonly recordScopes: RecordScopeService,
+    private readonly recordScopeService: RecordScopeService,
   ) {}
 
   @Get('me/permissions')
@@ -36,7 +36,7 @@ export class PermissionsController {
     @Param('organizationId', ParseUUIDPipe) _organizationId: string,
   ) {
     void _organizationId;
-    return this.recordScopes.effectiveScopes();
+    return this.recordScopeService.effectiveScopes();
   }
 
   @Get('permissions')
