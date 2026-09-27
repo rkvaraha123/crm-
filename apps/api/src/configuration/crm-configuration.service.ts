@@ -54,7 +54,9 @@ export class CrmConfigurationService {
           updatedAt: null,
         }
       );
-    }).sort((a, b) => a.navOrder - b.navOrder || a.label.localeCompare(b.label));
+    }).sort(
+      (a, b) => a.navOrder - b.navOrder || a.label.localeCompare(b.label),
+    );
   }
 
   async isEnabled(key: CrmModuleKey) {
@@ -124,14 +126,13 @@ export class CrmConfigurationService {
       ),
     ];
     if (normalized.length < 1)
-      throw new BadRequestException('Select fields require at least one option');
+      throw new BadRequestException(
+        'Select fields require at least one option',
+      );
     return normalized;
   }
 
-  async createCustomField(
-    organizationId: string,
-    data: CreateCustomFieldDto,
-  ) {
+  async createCustomField(organizationId: string, data: CreateCustomFieldDto) {
     await this.assertOrganization(organizationId);
     const options = this.normalizedOptions(data.fieldType, data.options);
     return this.prisma.customFieldDefinition.create({
