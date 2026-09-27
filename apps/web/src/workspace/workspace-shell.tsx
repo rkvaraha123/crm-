@@ -147,8 +147,8 @@ export function WorkspaceShell({
                 onClick={() => setMobileOpen(false)}
                 to="/app/settings"
               >
-                <span>Settings</span>
-                <small>Access & configuration</small>
+                <span>Admin Panel</span>
+                <small>Appearance & access</small>
               </NavLink>
             </>
           )}
@@ -321,8 +321,8 @@ function SettingsHome() {
       <div className="crm-page-heading">
         <div>
           <p className="crm-page-kicker">Administration</p>
-          <h1>Settings</h1>
-          <p>Manage access and workspace configuration.</p>
+          <h1>Admin Panel</h1>
+          <p>Manage CRM appearance, access, and workspace configuration.</p>
         </div>
       </div>
       <div className="crm-settings-grid">
