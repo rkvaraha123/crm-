@@ -1,12 +1,10 @@
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import {
   OrganizationStatus,
-  Prisma,
   UserStatus,
 } from '@prisma/client';
 import { PrismaService } from '../common/database/prisma.service';
