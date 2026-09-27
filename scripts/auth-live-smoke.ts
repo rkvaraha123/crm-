@@ -43,6 +43,7 @@ const orgIds: string[] = [];
 let stage = 'setup';
 const apiStatuses: number[] = [];
 let tokenMetadata: Record<string, unknown> | undefined;
+const authorizationStatuses: Record<string, number | boolean> = {};
 let inspectionPage: Page | undefined;
 async function adminRequest(path: string, options: RequestInit = {}) {
   const response = await fetch(
@@ -168,10 +169,27 @@ async function main() {
   });
   assert.equal(me.status, 200);
   assert.equal(((await me.json()) as { id: string }).id, crmId);
+  const effective = await fetch(
+    `http://localhost:3000/api/v1/organizations/${orgIds[0]}/me/permissions`,
+    {
+      headers: {
+        Authorization: authHeader!,
+        'X-Organization-Id': orgIds[0],
+      },
+    },
+  );
+  authorizationStatuses.effective = effective.status;
+  assert.equal(effective.status, 200);
+  const hasSettingsUpdate = (
+    (await effective.json()) as { permissions: string[] }
+  ).permissions.includes('settings.update');
+  authorizationStatuses.hasSettingsUpdate = hasSettingsUpdate;
+  assert.ok(hasSettingsUpdate);
   const denied = await fetch(
     `http://localhost:3000/api/v1/organizations/${orgIds[1]}/teams`,
     { headers: { Authorization: authHeader!, 'X-Organization-Id': orgIds[1] } },
   );
+  authorizationStatuses.foreignTenant = denied.status;
   assert.equal(denied.status, 403);
   const role = await prisma.role.findUniqueOrThrow({
     where: {
@@ -209,7 +227,7 @@ async function main() {
     .getByRole('button', { name: 'Sign in', exact: true })
     .waitFor({ timeout: 30000 });
   console.info(
-    'PASS: real Keycloak PKCE login, authenticated /me, one-organization selection, foreign-tenant denial, multi-organization switching, in-memory tokens, logout, and idempotent bootstrap.',
+    'PASS: real Keycloak PKCE login, authenticated /me, PostgreSQL RBAC resolution, one-organization selection, foreign-tenant denial, multi-organization switching, in-memory tokens, logout, and idempotent bootstrap.',
   );
 }
 async function cleanup() {
@@ -236,6 +254,8 @@ void main()
       apiStatuses,
       'Token routing metadata:',
       tokenMetadata,
+      'Authorization statuses:',
+      authorizationStatuses,
     );
     if (inspectionPage) {
       console.info(

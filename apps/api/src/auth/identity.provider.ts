@@ -16,8 +16,8 @@ export class IdentityProvider {
   async resolve(request: Request): Promise<VerifiedIdentity> {
     const principal = await this.verifier.verify(request.headers.authorization);
     const user = await this.linking.resolve(principal);
-    // Global provisioning stays disabled pending Task 4; token realm/client roles
-    // never confer CRM system privileges. Bootstrap is an operator-only CLI.
+    // Token realm/client roles never confer CRM privileges. Platform authority
+    // is resolved separately from PostgreSQL role assignments.
     return {
       userId: user.id,
       identityProviderId: principal.subject,

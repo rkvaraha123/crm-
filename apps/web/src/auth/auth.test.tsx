@@ -46,7 +46,7 @@ const me = {
   email: 'test@example.invalid',
   organizations,
 };
-function mockApi(orgs = organizations) {
+function mockApi(orgs = organizations, permissions: string[] = []) {
   vi.stubGlobal(
     'fetch',
     vi.fn(
@@ -55,14 +55,20 @@ function mockApi(orgs = organizations) {
           JSON.stringify(
             url.endsWith('/me')
               ? { ...me, organizations: orgs }
-              : url.includes('/organizations/')
-                ? {
-                    id: url.endsWith('/a') ? 'a' : 'b',
-                    name: url.endsWith('/a')
-                      ? 'Organization A'
-                      : 'Organization B',
-                  }
-                : { status: 'ok' },
+              : url.endsWith('/me/permissions')
+                ? { permissions }
+                : url.endsWith('/roles') ||
+                    url.endsWith('/permissions') ||
+                    url.endsWith('/members')
+                  ? []
+                  : url.includes('/organizations/')
+                    ? {
+                        id: url.endsWith('/a') ? 'a' : 'b',
+                        name: url.endsWith('/a')
+                          ? 'Organization A'
+                          : 'Organization B',
+                      }
+                    : { status: 'ok' },
           ),
           { status: 200 },
         ),
@@ -113,6 +119,21 @@ describe('authentication and organization UI', () => {
       await screen.findByText('Connected to Organization A'),
     ).toBeDefined();
     expect(screen.queryByRole('combobox')).toBeNull();
+  });
+  it('uses effective permissions for authorization UI', async () => {
+    mockApi(
+      [organizations[0]],
+      ['settings.read', 'settings.update', 'users.read'],
+    );
+    await setup();
+    expect(await screen.findByText('Roles & Permissions')).toBeDefined();
+    expect(screen.getByLabelText('New role name')).toBeDefined();
+  });
+  it('hides authorization administration without settings.read', async () => {
+    mockApi([organizations[0]], ['teams.read']);
+    await setup();
+    await screen.findByText('Connected to Organization A');
+    expect(screen.queryByText('Roles & Permissions')).toBeNull();
   });
   it('requires selection for multiple organizations and refreshes tenant data', async () => {
     mockApi();
@@ -185,6 +206,28 @@ describe('authentication and organization UI', () => {
       expect.objectContaining({
         headers: {
           Authorization: 'Bearer test-access-token',
+          'X-Organization-Id': 'a',
+        },
+      }),
+    );
+  });
+  it('sends authorized JSON mutations through the shared client', async () => {
+    const fetcher = vi.fn().mockResolvedValue(new Response('{}'));
+    vi.stubGlobal('fetch', fetcher);
+    await createApiClient(async () => 'token', vi.fn())(
+      '/organizations/a/roles',
+      'a',
+      undefined,
+      { method: 'POST', body: JSON.stringify({ name: 'Custom' }) },
+    );
+    expect(fetcher).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ name: 'Custom' }),
+        headers: {
+          Authorization: 'Bearer token',
+          'Content-Type': 'application/json',
           'X-Organization-Id': 'a',
         },
       }),

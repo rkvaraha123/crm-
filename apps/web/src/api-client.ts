@@ -31,14 +31,17 @@ export function createApiClient(
     path: string,
     organizationId?: string,
     signal?: AbortSignal,
+    init: Pick<RequestInit, 'method' | 'body'> = {},
   ): Promise<T> {
     if (!path.startsWith('/') || path.startsWith('//'))
       throw new Error('Relative API path required');
     const token = await getToken();
     const response = await fetch(`${base.replace(/\/$/, '')}${path}`, {
+      ...init,
       headers: {
         Authorization: `Bearer ${token}`,
         ...(organizationId ? { 'X-Organization-Id': organizationId } : {}),
+        ...(init.body ? { 'Content-Type': 'application/json' } : {}),
       },
       signal: signal ?? AbortSignal.timeout(10000),
     });
@@ -49,6 +52,8 @@ export function createApiClient(
     return response.json() as Promise<T>;
   };
 }
+
+export type ApiClient = ReturnType<typeof createApiClient>;
 export function selectOrganization(
   organizations: Organization[],
   selected: string | null,

@@ -4,9 +4,10 @@ import { DatabaseModule } from '../database/database.module';
 import { OrganizationContextService } from './organization-context.service';
 import { OrganizationContextInterceptor } from './organization-context.interceptor';
 import { TenantAccessGuard } from './tenant-access.guard';
+import { AuthorizationModule } from '../../authorization/authorization.module';
 @Global()
 @Module({
-  imports: [AuthModule, DatabaseModule],
+  imports: [AuthModule, DatabaseModule, AuthorizationModule],
   providers: [
     OrganizationContextService,
     OrganizationContextInterceptor,

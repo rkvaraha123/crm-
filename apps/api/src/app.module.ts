@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
+import { AuthorizationModule } from './authorization/authorization.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -28,6 +29,7 @@ import { CommonModule } from './common/common.module';
     OrganizationsModule,
     UsersModule,
     CommonModule,
+    AuthorizationModule,
   ],
 })
 export class AppModule {}

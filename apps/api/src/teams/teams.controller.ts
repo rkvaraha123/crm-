@@ -15,8 +15,10 @@ import { OrganizationContextInterceptor } from '../common/tenant/organization-co
 import { PageDto } from '../common/dto/page.dto';
 import { TeamsService } from './teams.service';
 import { CreateTeamDto } from './dto/create-team.dto';
+import { PermissionGuard } from '../authorization/permission.guard';
+import { RequirePermissions } from '../authorization/require-permissions.decorator';
 @Controller('organizations/:organizationId/teams')
-@UseGuards(TenantAccessGuard)
+@UseGuards(TenantAccessGuard, PermissionGuard)
 @UseInterceptors(OrganizationContextInterceptor)
 export class TeamsController {
   constructor(private readonly service: TeamsService) {}
@@ -24,8 +26,8 @@ export class TeamsController {
   @Access({
     kind: 'tenant',
     parameter: 'organizationId',
-    permission: 'teams.read',
   })
+  @RequirePermissions('teams.read')
   list(
     @Param('organizationId', ParseUUIDPipe) _id: string,
     @Query() page: PageDto,
@@ -37,8 +39,8 @@ export class TeamsController {
   @Access({
     kind: 'tenant',
     parameter: 'organizationId',
-    permission: 'teams.create',
   })
+  @RequirePermissions('teams.create')
   create(
     @Param('organizationId', ParseUUIDPipe) _id: string,
     @Body() data: CreateTeamDto,

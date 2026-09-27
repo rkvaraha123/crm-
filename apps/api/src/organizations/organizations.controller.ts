@@ -16,8 +16,10 @@ import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { PageDto } from '../common/dto/page.dto';
+import { PermissionGuard } from '../authorization/permission.guard';
+import { RequirePermissions } from '../authorization/require-permissions.decorator';
 @Controller('organizations')
-@UseGuards(TenantAccessGuard)
+@UseGuards(TenantAccessGuard, PermissionGuard)
 @UseInterceptors(OrganizationContextInterceptor)
 export class OrganizationsController {
   constructor(private readonly service: OrganizationsService) {}
@@ -27,7 +29,8 @@ export class OrganizationsController {
     return this.service.create(data);
   }
   @Get(':id')
-  @Access({ kind: 'tenant', parameter: 'id', permission: 'organizations.read' })
+  @Access({ kind: 'tenant', parameter: 'id' })
+  @RequirePermissions('organizations.read')
   find(@Param('id', ParseUUIDPipe) _id: string) {
     void _id;
     return this.service.findCurrent();
@@ -36,8 +39,8 @@ export class OrganizationsController {
   @Access({
     kind: 'tenant',
     parameter: 'organizationId',
-    permission: 'users.invite',
   })
+  @RequirePermissions('users.invite')
   createMember(
     @Param('organizationId', ParseUUIDPipe) _id: string,
     @Body() data: CreateMemberDto,
@@ -49,8 +52,8 @@ export class OrganizationsController {
   @Access({
     kind: 'tenant',
     parameter: 'organizationId',
-    permission: 'users.read',
   })
+  @RequirePermissions('users.read')
   listMembers(
     @Param('organizationId', ParseUUIDPipe) _id: string,
     @Query() page: PageDto,

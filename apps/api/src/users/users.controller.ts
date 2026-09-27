@@ -13,8 +13,9 @@ import { TenantAccessGuard } from '../common/tenant/tenant-access.guard';
 import { OrganizationContextInterceptor } from '../common/tenant/organization-context.interceptor';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { PermissionGuard } from '../authorization/permission.guard';
 @Controller('users')
-@UseGuards(TenantAccessGuard)
+@UseGuards(TenantAccessGuard, PermissionGuard)
 @UseInterceptors(OrganizationContextInterceptor)
 export class UsersController {
   constructor(private readonly service: UsersService) {}

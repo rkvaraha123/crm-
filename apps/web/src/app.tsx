@@ -4,6 +4,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getHealth } from './api';
 import { createApiClient, CurrentUser, selectOrganization } from './api-client';
 import { useAuth } from './auth/auth-context';
+import { AuthorizationProvider } from './authorization/authorization-context';
+import { AuthorizationAdmin } from './authorization/admin-panel';
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
   if (!auth.ready) return <p role="status">Preparing sign-in…</p>;
@@ -72,6 +74,17 @@ export function Workspace() {
     queryFn: ({ signal }) =>
       api<{ id: string; name: string; slug: string }>(
         `/organizations/${organizationId}`,
+        organizationId!,
+        signal,
+      ),
+    enabled: !!organizationId,
+    retry: false,
+  });
+  const permissions = useQuery({
+    queryKey: ['tenant', me.data?.id, organizationId, 'permissions'],
+    queryFn: ({ signal }) =>
+      api<{ permissions: string[] }>(
+        `/organizations/${organizationId}/me/permissions`,
         organizationId!,
         signal,
       ),
@@ -153,15 +166,31 @@ export function Workspace() {
                 <p className="mt-6" role="alert">
                   {organization.error.message}
                 </p>
+              ) : permissions.isPending ? (
+                <p className="mt-6" role="status">
+                  Loading your permissions…
+                </p>
+              ) : permissions.isError ? (
+                <p className="mt-6" role="alert">
+                  Permission information is unavailable.
+                </p>
               ) : (
-                <div className="mt-6" role="status">
-                  <p className="font-semibold text-teal-800">
-                    Connected to {organization.data.name}
-                  </p>
-                  <p className="mt-2 text-slate-600">
-                    Your organization workspace is ready.
-                  </p>
-                </div>
+                <AuthorizationProvider
+                  permissions={permissions.data.permissions}
+                >
+                  <div className="mt-6" role="status">
+                    <p className="font-semibold text-teal-800">
+                      Connected to {organization.data.name}
+                    </p>
+                    <p className="mt-2 text-slate-600">
+                      Your organization workspace is ready.
+                    </p>
+                  </div>
+                  <AuthorizationAdmin
+                    api={api}
+                    organizationId={organizationId}
+                  />
+                </AuthorizationProvider>
               )}
             </section>
           )}

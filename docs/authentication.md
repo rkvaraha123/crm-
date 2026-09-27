@@ -74,7 +74,7 @@ The generated Keycloak console account is a local bootstrap administrator. Produ
 
 `GET /api/v1/me` returns the internal profile and only ACTIVE memberships in ACTIVE organizations. It does not expose identityProviderId, tokens, secrets, role claims, or unrelated organizations. No redundant /me/organizations endpoint is needed.
 
-Task 2 globally sensitive POST /organizations and POST /users remain unavailable to real identities (403). Keycloak realm/client roles and arbitrary claims never set a global CRM administrator flag. Existing self-profile and tenant permission protections remain; full permission-management and global administration are Task 4.
+Keycloak realm/client roles and arbitrary claims never set a global CRM administrator flag. Platform administration is derived only from an active PostgreSQL SUPER_ADMIN assignment created through the trusted bootstrap path. Existing self-profile and tenant protections remain in force.
 
 ## Browser state and organization selection
 
@@ -82,7 +82,7 @@ The maintained keycloak-js adapter initializes before React Router consumes the 
 
 After authentication, `/me` determines eligible organizations. One organization is selected automatically; multiple organizations require selection; no organizations yields an explicit administrator-contact state. Requests include the selected X-Organization-Id, but the server independently checks membership every time. Tenant query keys include user and organization IDs. Switching organizations cancels in-flight tenant requests and clears old tenant query data. Logout or refresh failure clears user/tenant state and tokens. The browser does not contain administration credentials.
 
-The workspace status request retains Task 2 organizations.read enforcement; users lacking that permission see an access-denied state even if `/me` lists an active membership. Task 4 will provide complete role-management flows. Selecting an organization never creates an authorization grant.
+The workspace status request retains organizations.read enforcement; users lacking that permission see an access-denied state even if `/me` lists an active membership. Task 4 role-management and effective-permission flows are documented in `docs/authorization.md`. Selecting an organization never creates an authorization grant.
 
 ## Server administration abstraction
 

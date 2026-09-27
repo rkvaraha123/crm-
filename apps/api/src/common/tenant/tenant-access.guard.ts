@@ -13,6 +13,7 @@ import { IdentityProvider } from '../../auth/identity.provider';
 import { PrismaService } from '../database/prisma.service';
 import { ACCESS_POLICY, AccessPolicy } from './tenant-access.decorator';
 import type { OrganizationContext } from './organization-context.service';
+import { AuthorizationService } from '../../authorization/authorization.service';
 export const VERIFIED_CONTEXT = Symbol('verified-organization-context');
 export type ContextRequest = Request & {
   [VERIFIED_CONTEXT]?: OrganizationContext;
@@ -23,6 +24,7 @@ export class TenantAccessGuard implements CanActivate {
     private readonly identities: IdentityProvider,
     private readonly prisma: PrismaService,
     private readonly reflector: Reflector,
+    private readonly authorization: AuthorizationService,
   ) {}
   async canActivate(execution: ExecutionContext): Promise<boolean> {
     const request = execution.switchToHttp().getRequest<ContextRequest>();
@@ -40,18 +42,22 @@ export class TenantAccessGuard implements CanActivate {
       [execution.getHandler(), execution.getClass()],
     );
     if (!policy) throw new ForbiddenException('Access policy required');
+    const systemAdmin =
+      policy.kind !== 'tenant' &&
+      (identity.systemAdmin ||
+        (await this.authorization.isPlatformAdmin(identity.userId)));
     const context: OrganizationContext = {
       userId: identity.userId,
-      systemAdmin: identity.systemAdmin,
+      systemAdmin,
       identityProviderId: identity.identityProviderId,
     };
     if (policy.kind === 'system') {
-      if (!identity.systemAdmin)
+      if (!systemAdmin)
         throw new ForbiddenException('System administrator required');
     } else if (policy.kind === 'self') {
       if (!isUUID(request.params.id as string))
         throw new BadRequestException('Invalid user UUID');
-      if (request.params.id !== identity.userId && !identity.systemAdmin)
+      if (request.params.id !== identity.userId && !systemAdmin)
         throw new ForbiddenException('User access denied');
     } else {
       if (!isUUID(request.params[policy.parameter] as string))
@@ -69,32 +75,14 @@ export class TenantAccessGuard implements CanActivate {
         },
         include: {
           organization: { select: { status: true } },
-          userRoles: {
-            include: {
-              role: {
-                include: { permissions: { include: { permission: true } } },
-              },
-            },
-          },
         },
       });
-      // Global role assignments grant permissions only within active memberships.
-      // Even a system administrator cannot bypass tenant membership on these routes.
       if (
         !member ||
         member.status !== 'ACTIVE' ||
         member.organization.status !== 'ACTIVE'
       )
         throw new ForbiddenException('Active organization membership required');
-      const allowed = member.userRoles.some(
-        ({ role }) =>
-          (role.organizationId === null ||
-            role.organizationId === organizationId) &&
-          role.permissions.some(
-            ({ permission }) => permission.key === policy.permission,
-          ),
-      );
-      if (!allowed) throw new ForbiddenException('Permission denied');
       context.organizationId = organizationId;
     }
     request[VERIFIED_CONTEXT] = Object.freeze(context);

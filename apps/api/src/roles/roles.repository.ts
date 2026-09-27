@@ -14,6 +14,12 @@ export class RolesRepository {
       take: page.limit,
       skip: page.offset,
       orderBy: [{ name: 'asc' }, { id: 'asc' }],
+      include: {
+        permissions: {
+          orderBy: { permission: { key: 'asc' } },
+          select: { permission: { select: { id: true, key: true } } },
+        },
+      },
     });
   }
 }
