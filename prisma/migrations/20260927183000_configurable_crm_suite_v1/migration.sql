@@ -319,3 +319,26 @@ CROSS JOIN (
     ('Lost', 60, 0)
 ) AS stage("name", "position", "probability")
 WHERE p."name" = 'Sales Pipeline' AND p."isDefault" = true;
+
+
+-- Existing roles receive scopes for the new tenant-owned record types.
+INSERT INTO "RoleRecordScope" ("roleId", "resource", "scope")
+SELECT r."id", resource."resource"::"RecordResource",
+  CASE r."name"
+    WHEN 'TEAM_LEAD' THEN 'TEAM'::"RecordScope"
+    WHEN 'SALES' THEN 'OWN'::"RecordScope"
+    ELSE 'ORGANIZATION'::"RecordScope"
+  END
+FROM "Role" r
+CROSS JOIN (VALUES ('LEADS'), ('DEALS'), ('TASKS')) AS resource("resource")
+WHERE r."name" IN (
+  'SUPER_ADMIN',
+  'ORG_ADMIN',
+  'MANAGER',
+  'TEAM_LEAD',
+  'SALES',
+  'MARKETING',
+  'SUPPORT',
+  'VIEWER'
+)
+ON CONFLICT ("roleId", "resource") DO NOTHING;
