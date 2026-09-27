@@ -142,7 +142,7 @@ describe('authentication and organization UI', () => {
       ['settings.read', 'settings.update', 'users.read'],
     );
     await setup();
-    fireEvent.click(await screen.findByRole('link', { name: /Admin Panel/ }));
+    fireEvent.click(await screen.findByRole('link', { name: /Settings/ }));
     fireEvent.click(
       await screen.findByRole('link', { name: /Roles & Permissions/ }),
     );
@@ -153,7 +153,7 @@ describe('authentication and organization UI', () => {
     mockApi([organizations[0]], ['teams.read']);
     await setup();
     await screen.findByText('Organization A');
-    expect(screen.queryByRole('link', { name: /Admin Panel/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: /Settings/ })).toBeNull();
   });
   it('requires selection for multiple organizations and refreshes tenant data', async () => {
     mockApi();
