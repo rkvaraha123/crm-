@@ -9,6 +9,7 @@ import { DatabaseModule } from './common/database/database.module';
 import { validateEnvironment } from './common/environment';
 import { TenantModule } from './common/tenant/tenant.module';
 import { CompaniesModule } from './companies/companies.module';
+import { CrmConfigurationModule } from './configuration/crm-configuration.module';
 import { ContactsModule } from './contacts/contacts.module';
 import { HealthModule } from './health/health.module';
 import { OrganizationsModule } from './organizations/organizations.module';
@@ -26,6 +27,7 @@ import { UsersModule } from './users/users.module';
     }),
     DatabaseModule,
     TenantModule,
+    CrmConfigurationModule,
     AdminModule,
     TeamsModule,
     RolesModule,
