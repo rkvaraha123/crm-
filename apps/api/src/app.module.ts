@@ -11,6 +11,10 @@ import { TenantModule } from './common/tenant/tenant.module';
 import { CompaniesModule } from './companies/companies.module';
 import { CrmConfigurationModule } from './configuration/crm-configuration.module';
 import { ContactsModule } from './contacts/contacts.module';
+import { LeadsModule } from './leads/leads.module';
+import { DealsModule } from './deals/deals.module';
+import { TasksModule } from './tasks/tasks.module';
+import { ReportsModule } from './reports/reports.module';
 import { HealthModule } from './health/health.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { PermissionsModule } from './permissions/permissions.module';
@@ -39,6 +43,10 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     CompaniesModule,
     ContactsModule,
+    LeadsModule,
+    DealsModule,
+    TasksModule,
+    ReportsModule,
     CommonModule,
     AuthorizationModule,
   ],
